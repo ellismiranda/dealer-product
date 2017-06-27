@@ -1,7 +1,3 @@
-# dealer-product
-Dealer product, written in Botkit
-
-----
 # Botkit Starter Kit for Facebook
 
 This repo contains everything you need to get started building a bot with Botkit and Botkit Studio!
@@ -65,4 +61,3 @@ module.exports = function(controller) {
 
 }
 ```
-
