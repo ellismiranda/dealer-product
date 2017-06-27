@@ -1,6 +1,8 @@
 # Botkit Dealer-Product
 
-The goal for this is to transfer over the dealer product to Botkit, and make sure of its more open-ended capabilities.
+The goal for this is to transfer over the dealer product to Botkit, and make use of its more open-ended capabilities.
+
+This project makes use of the Botkit-Starter-Kit for Facebook found at [Botkit](https://github.com/howdyai/botkit).
 
 # Botkit Starter Kit for Facebook
 
