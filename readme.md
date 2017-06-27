@@ -1,3 +1,7 @@
+# Botkit Dealer-Product
+
+The goal for this is to transfer over the dealer product to Botkit, and make sure of its more open-ended capabilities.
+
 # Botkit Starter Kit for Facebook
 
 This repo contains everything you need to get started building a bot with Botkit and Botkit Studio!
