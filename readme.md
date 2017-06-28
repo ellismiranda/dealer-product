@@ -1,7 +1,9 @@
-# dealer-product
-Dealer product, written in Botkit
+# Botkit Dealer-Product
 
-----
+The goal for this is to transfer over the dealer product to Botkit, and make use of its more open-ended capabilities.
+
+This project makes use of the Botkit-Starter-Kit for Facebook found at [Botkit](https://github.com/howdyai/botkit).
+
 # Botkit Starter Kit for Facebook
 
 This repo contains everything you need to get started building a bot with Botkit and Botkit Studio!
@@ -65,4 +67,3 @@ module.exports = function(controller) {
 
 }
 ```
-
