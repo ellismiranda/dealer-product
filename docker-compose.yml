@@ -1,0 +1,32 @@
+version: "2"
+
+services:
+  node:
+    restart: always
+    image: dealer-product:development
+    build: ./
+    # links:
+    #   - postgres
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run start
+
+  # postgres:
+  #   image: postgres:latest
+  #   environment:
+  #     - POSTGRES_PASSWORD=password
+  #     - POSTGRES_DB=cara
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/cara.pem:/etc/ssl/certs/cara.pem
+      - ./nginx/cara.key:/etc/ssl/private/cara.key
+    links:
+      - node
+    ports:
+      - 80:80
+      - 443:443
+      - 3000:3000
