@@ -4,6 +4,10 @@ The goal for this is to transfer over the dealer product to Botkit, and make use
 
 This project makes use of the Botkit-Starter-Kit for Facebook found at [Botkit](https://github.com/howdyai/botkit).
 
+It is dockerized, so (assuming you have `docker` and `docker-compose` installed) you can run it with `docker-compose up`.
+
+Postgres isn't part of docker yet.
+
 # Botkit Starter Kit for Facebook
 
 This repo contains everything you need to get started building a bot with Botkit and Botkit Studio!
