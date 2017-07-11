@@ -1,174 +1,172 @@
-
-
 var apiaibotkit = require('api-ai-botkit-facebook');
 var apiai = apiaibotkit(process.env.apiaiToken);
 
+// SINGLE DOT = 'HERE'
+// DOUBLE DOT = 'GO UP 1'
+var clapi = require('../utils/uClapi.js');
+var checks = require('../utils/uChecks.js');
+var tools = require('../utils/uTools.js');
+var handler = require('../utils/uRequestHandler.js');
+
+var knex = require('knex')({
+  client: 'postgresql',
+  connection: {
+    host: process.env.pgHost,
+    user: process.env.pgUser,
+    password: process.env.pgPass,
+    database: process.env.pgDB,
+  }
+});
+
 module.exports = function(controller) {
-  
+
+  //Q: is there a way to check all other functions before this one?
   //everything said to the bot gets passed through apiai, unless it gets caught by a local script
    controller.hears('(.*)', 'message_received', function(bot, message) {
-     const [localCheckStatus, localPayload] = localCheck(message.text);
+     console.log('Input message: ' + message.text);
+     const [localCheckStatus, localPayload] = checks.localCheck(message.text);
+     console.log('Local Check: ' + localCheckStatus);
      if (localCheckStatus === 'ERROR') {
+       console.log('Sending to apiai...');
        apiai.process(message, bot);
      } else {
+       console.log('Running Studio script...');
+       console.log(message.text);
        controller.studio.run(bot, localPayload, message.user, message.channel);
      }
    })
-  
+
   //produces a nice log of the result of .process(message)
   apiai.all(function (message, resp, bot) {
+
+    console.log("apiai result:");
     console.log(resp.result);
     console.log(resp.result.parameters);
-    console.log(resp.result.action);
+
+    var date = new Date();
+    var currentTime = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+    var currentDate = date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear();
+
+    //log the date, time, message, and nlp response
+    knex.table('users')
+        .where('uuid', message.user)
+        .first('id')
+        .then(function(res) {
+          knex.table('messages')
+              .insert({userId: res.id,
+                      msgStr: message.text,
+                      processedNLP: resp.result,
+                      time: currentTime,
+                      date: currentDate})
+              .then(function() { });
+        });
   })
-  
-  
+
+
   //.action() handlers follow
   apiai
-  
-  .action('hi.carla', function(message, resp, bot) {
-    controller.studio.run(bot, 'fb hello', message.user, message.channel);
+
+  .action('hi.carla', async function(message, resp, bot) {
+    clapi.clapi(resp);
   })
-  
+
+  //HEAVY TESTING - THIS NEEDS CLAPI IMPLEMENTED
+  //this should give details about a car / show off the car
+  .action('request.details', async function(message, resp, bot) {
+    var replyAttachment = await handler.choose(resp);
+    bot.reply(message, {
+      attachment: replyAttachment,
+    })
+   })
+
+   //pretty basic currently, returns multiple carousel elements
+  .action('request.group', async function(message, resp, bot){
+    var replyAttachment = await handler.choose(resp);
+    bot.reply(message, { attachment: replyAttachment});
+  })
+
+  //changes the user's zipcode
   .action('change.zipcode', function(message, resp, bot) {
     //checks if the user says that the zip isn't theirs
     if (resp.result.parameters.modifier == 'negation') {
       //runs a small botkit studio script to get a new zip
       controller.studio.run(bot, 'get_correct_zip', message.user, message.channel);
     } else {
-      //otherwise store the zip
-      controller.storage.users.get(message.user, function(err, user) {
-        user.user.zipcode = resp.result.parameters.zipcode;
-        controller.storage.users.save(user);
-      })
+      knex.table('users')
+        .where('uuid', message.user)
+        .first('zipcode')
+        .update('zipcode', resp.result.parameters.zipcode)
+        .then(function(){ });
       bot.reply(message, "Okay, I have changed your zipcode to " + resp.result.parameters.zipcode + ".");
     }
   })
-  
+
+  //modifies the user's preference score values based on what they say
+  //e.g. "I only care about safety" => safety+1, rest-1
+  //e.g. "I care about performance and utility" => performance+1, utility+1
   .action('change.preferences', function(message, resp, bot) {
-    
     //grab the preferences
     var reqAtts = resp.result.parameters.requestedAttributes;
     //grab the language modifier
     var modifier = resp.result.parameters.modifier;
 
-    controller.storage.users.get(message.user, function(err, user) {
-      
-      //grab the user's preferences
-      var newPrefs = user.user.preferences;
-      
+    knex.table('users').where('uuid', message.user).first('preferences').then(function(res) {
+      var tempData = res;
+      var newPrefs = tempData.preferences;
       var pref;
-      
-      for (pref in newPrefs) {        
-        if (modifier == 'singular') {          
-          if (reqAtts.indexOf(pref) > -1) {            
-              newPrefs[pref] = newPrefs[pref] + 1;            
-          } else {            
-            newPrefs[pref] = newPrefs[pref] - 1;            
+      for (pref in newPrefs) {
+        if (modifier == 'singular') {
+          if (reqAtts.indexOf(pref) > -1) {
+              newPrefs[pref] = newPrefs[pref] + 1;
+          } else {
+            newPrefs[pref] = newPrefs[pref] - 1;
           }
         } else if (modifier == 'negation') {
           if (reqAtts.indexOf(pref) > -1) {
-            newPrefs[pref] = newPrefs[pref] - 1;         
+            newPrefs[pref] = newPrefs[pref] - 1;
           }
         } else {
           if (reqAtts.indexOf(pref) > -1) {
-            newPrefs[pref] = newPrefs[pref] + 1;          
+            newPrefs[pref] = newPrefs[pref] + 1;
           }
         }
-        
       }
-      
-      controller.storage.users.save(user);
-      
-    });
-    
-    
-  })
-  
-  .action('request.group', function(message, resp, bot){ 
-    bot.reply(message, 'I don\'t have a database :(');
-    //do some database grabbing here
-  })
-  
-  .action('schedule.testDrive', function(message, resp, bot) {
-    controller.storage.users.get(message.user, function(err, user) {
-      //checks if the user already has a test drive scheduled
-      if (user._has_td_scheduled) {
-        //runs a specific Studio script if it does
-        controller.studio.run(bot, 'has_td_scheduled', message.user, message.channel);
-      } else {
-        //otherwise it sets the car
-        user._td_car = resp.result.parameters.car;
-        //and runs the standard test_drive script
-        controller.studio.run(bot, 'test_drive', message.user, message.channel);
-      }
+      tempData.preferences = newPrefs;
+      knex.table('users').where('uuid', message.user).update({preferences: newPrefs}).then(function() { });
     })
+    bot.reply(message, "Okay, I will adjust car selection accordingly.");
   })
-  
-  // //standard response message in the case of 
+
+  .action('schedule.testDrive', function(message, resp, bot) {
+    knex.table('users')
+        .where('uuid', message.user)
+        .first('hasTdScheduled')
+        .then(function(res) {
+          if (res.hasTdScheduled) {
+            controller.studio.run(bot, 'has_td_scheduled', message.user, message.channel);
+          } else {
+            if (resp.result.parameters.car[0].make !== '') {
+              knex.table('users')
+                  .where('uuid', message.user)
+                  .first('hasTdScheduled')
+                  .update('tdCarMake', resp.result.parameters.car[0].make)
+                  .then(function(res) { });
+            }
+            controller.studio.run(bot, 'test_drive', message.user, message.channel);
+          }
+        });
+  })
+
+  // //standard response message in the case of
   .action('input.unknown', function (message, resp, bot) {
     bot.reply(message, resp.result.fulfillment.speech);
     // controller.studio.runTrigger(bot, message.text, message.user, message.channel);
   })
+
   //CATCH-ALL: WILL RUN ANYTHING THROUGH STUDIO THAT A .action() HANDLER DOESN'T EXIST FOR
   .action(null, function(message, resp, bot) {
-    console.log("..catch all..");
-    //USE
-//    controller.studio.run(bot, resp.result.fulfillment.speech, message.user, message.channel);
-    //OR
+    console.log("Running catch-all..");
     controller.studio.runTrigger(bot, resp.result.fulfillment.speech, message.user, message.channel);
   });
-  
-}
 
-function localCheck(txt) {
-  
-  var isLocal = false;
-  
-  var toDeliver = null;
-  
-  LOCAL_CHECKS.forEach((check) => {
-    console.log('checking..');
-    if (txt.toLowerCase() === check.trigger) {
-      isLocal = true;
-      toDeliver = check.payload;
-    }
-  });
-  
-  if (!isLocal) {
-    return ['ERROR', null];
-  }
-  return ['OK', toDeliver];
 }
-
-const LOCAL_CHECKS = [
-  {
-    trigger: "cara_welcome",
-    payload: "Cara_welcome"
-  }, {
-    trigger: "uptime",
-    payload: "uptime"
-  }, {
-    trigger: "debug",
-    payload: "uptime"
-  }, {
-    trigger: "different_car",
-    payload: "different_car"
-  },{
-    trigger: "lease",
-    payload: "lease"
-  }, {
-    trigger: "finance",
-    payload: "finance"
-  }, {
-    trigger: "cash_purchase",
-    payload: "cash_purchase"
-  }, {
-    trigger: "test_drive",
-    payload: "test_drive"
-  }, {
-    trigger: "live_chat",
-    payload: "live_chat"
-  }
-  
-]

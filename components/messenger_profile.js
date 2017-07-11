@@ -15,16 +15,6 @@ module.exports = function(controller) {
                 "type":"nested",
                 "call_to_actions":[
                   {
-                    "title":"Hello",
-                    "type":"postback",
-                    "payload":"hello"
-                  },
-                  {
-                    "title":"Help",
-                    "type":"postback",
-                    "payload":"help"
-                  },
-                  {
                     "title":"Reset",
                     "type":"postback",
                     "payload":"Cara_welcome"

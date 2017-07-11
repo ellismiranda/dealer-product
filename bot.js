@@ -42,13 +42,12 @@ var botkitStoragePostgres = require('botkit-storage-postgres');
 // Create the Botkit controller, which controls all instances of the bot.
 var controller = Botkit.facebookbot({
   //  storage: botkitStoragePostgres({
-  //   host: ' cara.c3egmopdhy59.us-east-1.rds.amazonaws.com',
-  //   user: 'cara_user',
-  //   password: 'BUJehuJgAs4eHFSByZufYS6JL',
-  //   database: 'cara'
+  //   host: process.env.postgresHost,
+  //   user: process.env.postgresUser,
+  //   password: process.env.postgresPassword,
+  //   database: process.env.postgresDatabase,
   // }),
-    storage: mongodb,
-    // debug: true,
+    //debug: true,
     receive_via_postback: true,
     verify_token: process.env.verify_token,
     access_token: process.env.page_token,
@@ -75,7 +74,6 @@ var normalizedPath = require("path").join(__dirname, "skills");
 require("fs").readdirSync(normalizedPath).forEach(function(file) {
   require("./skills/" + file)(controller);
 });
-
 
 // This captures and evaluates any message sent to the bot as a DM
 // or sent to the bot in the form "@bot message" and passes it to

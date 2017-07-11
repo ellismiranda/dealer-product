@@ -1,66 +1,93 @@
+var knex = require('knex')({
+  client: 'postgresql',
+  connection: {
+    host: process.env.pgHost,
+    user: process.env.pgUser,
+    password: process.env.pgPass,
+    database: process.env.pgDB,
+  }
+});
+
 module.exports = function(controller) {
-  
-// AN ATTEMPT AT GETTING THE USER'S FIRST NAME
-//   controller.studio.before('Cara_welcome', function(convo, next) {
 
-//     var request = require('request'); 
-//     var senderId = convo.context.user;
-    
-//     request({
-//       url: "https://graph.facebook.com/v2.6/" + senderId + "?fields=first_name&access_token=" + process.env.page_token,
-//       json: true // parse
-//     }, function(err, response, body) {
-//       if (err) {
-//         return err;
-//       }
-//       var first_name = JSON.parse(body).first_name;
-//       var last_name = JSON.parse(body).last_name;
-
-//       controller.storage.users.get(convo.context.user, function(err, user) {
-//         user._first_name = first_name;
-//         user._last_name = last_name;
-
-//         controller.storage.users.save(user);
-
-//       });
-        
-//     });
-    
-//     next();
-
-//   });
-
-  
   controller.studio.before('has_td_scheduled', function(convo, next) {
-    
-    controller.storage.users.get(convo.context.user, function(err, user) {
-      
-      convo.setVar('_td_date', user._td_date);
-      convo.setVar('_td_time', user._td_time);
-      convo.setVar('_location', user._location);
-      
-    })
-    
+    knex.table('users')
+        .where('uuid', convo.context.user)
+        .first('tdDate', 'tdTime', 'location', 'tdCarMake')
+        .then(function(res) {
+          convo.setVar('_td_date', res.tdDate);
+          convo.setVar('_td_time', res.tdTime);
+          convo.setVar('_location', res.location);
+        })
     next();
   })
-  
+
   controller.studio.before('lease', function(convo, next) {
-    controller.storage.users.get(convo.context.user, function(err, user) {
-      var answered_leaseq = user.lease.answered_leaseq;
-      console.log(answered_leaseq);
-      if (answered_leaseq) {
-        convo.setVar('miles_per_year', user.lease.miles_per_year);
-        convo.setVar('total_driveoff', user.lease.total_driveoff);
-        convo.setVar('lease_zipcode', user.lease.lease_zipcode);
-        console.log("set vars");
-        convo.gotoThread('answered_leaseq');
-        next();
-      } else {
-        
-      }
+    knex.table('users')
+        .where('uuid', convo.context.user)
+        .first('leaseMilesPerYear','leaseTotalDriveoff','zipcode', 'currentFinancePreference')
+        .then(function(res) {
+          var paymentOption = res.currentFinancePreference;
+          if (paymentOption !== '') {
+            if (paymentOption === 'lease') {
+              convo.setVar('miles_per_year', res.leaseMilesPerYear);
+              convo.setVar('total_driveoff', res.leaseTotalDriveoff);
+              convo.setVar('lease_zipcode', res.zipcode);
+              convo.gotoThread('answered_leaseq');
+              next();
+            } else {
+              convo.setVar('other_pay', paymentOption);
+              convo.gotoThread('other_plan');
+              next();
+            }
+          } else {
+            next();
+          }
+        });
     })
-    
+
+  controller.studio.before('cash', function(convo, next) {
+    knex.table('users')
+        .where('uuid', convo.context.user)
+        .first('zipcode', 'currentFinancePreference')
+        .then(function(res) {
+          var paymentOption = res.currentFinancePreference;
+          if (paymentOption !== '') {
+            if (paymentOption === 'cash') {
+              convo.setVar('zipcode', res.zipcode);
+              convo.gotoThread('answered_cashq');
+              next();
+            } else {
+              convo.setVar('other_pay', paymentOption);
+              convo.gotoThread('other_plan');
+              next();
+            }
+          } else {
+            next();
+          }
+        });
   })
-  
-  
+
+  controller.studio.before('finance', function(convo, next) {
+    knex.table('users')
+        .where('uuid', convo.context.user)
+        .first('financeYears','financeDown','zipcode', 'currentFinancePreference')
+        .then(function(res) {
+          var paymentOption = res.currentFinancePreference;
+          if (paymentOption !== '') {
+            if (paymentOption === 'finance') {
+              convo.setVar('finance_years', res.financeYears);
+              convo.setVar('finance_down', res.financeDown);
+              convo.setVar('zipcode', res.zipcode);
+              convo.gotoThread('answered_financeq');
+              next();
+            } else {
+              convo.setVar('other_pay', paymentOption);
+              convo.gotoThread('other_plan');
+              next();
+            }
+          }
+      });
+  })
+
 }
