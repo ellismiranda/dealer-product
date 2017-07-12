@@ -22,13 +22,46 @@ module.exports = function(controller) {
     next();
   })
 
+  //sets the variable in the script? not necessary!
+  controller.studio.before('test_drive', function(convo, next) {
+    knex.table('users')
+        .where('uuid', convo.context.user)
+        .first('tdDate')
+        .then(function(res) {
+          convo.setVar('_td_date', res.tdDate);
+        })
+    next();
+  })
+
+  //checks whether tomorrow's date is necessary for the test drive
+  controller.studio.beforeThread('test_drive', 'td_time', function(convo, next) {
+    var today = new Date();
+    var date = (today.getMonth() + 1) + '.' + (today.getDate()+1) + '.' + (today.getFullYear());
+
+    knex.table('users')
+        .where('uuid', convo.context.user)
+        .first('tdDate')
+        .then(function(res) {
+          console.log(res.tdDate);
+          if (res.tdDate == null) {
+            convo.setVar('_td_date', date);
+            knex.table('users')
+                .where('uuid', convo.context.user)
+                .update('tdDate', date)
+                .then(function() { });
+          }
+        })
+
+    next();
+  })
+
   controller.studio.before('lease', function(convo, next) {
     knex.table('users')
         .where('uuid', convo.context.user)
         .first('leaseMilesPerYear','leaseTotalDriveoff','zipcode', 'currentFinancePreference')
         .then(function(res) {
           var paymentOption = res.currentFinancePreference;
-          if (paymentOption !== '') {
+          if (paymentOption !== null) {
             if (paymentOption === 'lease') {
               convo.setVar('miles_per_year', res.leaseMilesPerYear);
               convo.setVar('total_driveoff', res.leaseTotalDriveoff);

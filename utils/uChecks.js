@@ -14,9 +14,11 @@ function localCheck(txt) {
       toDeliver = check.payload;
     }
   });
-  if (txt.indexOf('_details') || txt.indexOf('_gallery')) {
+  console.log(isLocal);
+  if (txt.indexOf('_details') > -1 || txt.indexOf('_gallery') > -1) {
     isLocal = true;
   }
+  console.log(isLocal);
   if (!isLocal) {
     return ['ERROR', null];
   }

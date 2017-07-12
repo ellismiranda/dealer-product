@@ -74,32 +74,3 @@ function makeElement(make, model, year,imageUrl) {
     }
   ];
 }
-
-// function detailsFormat(make, model, year, imageUrl) {
-//   var attachment = {
-//       'type':'template',
-//       'payload':{
-//            'template_type':'generic',
-//            'elements':[
-//              {
-//                'title': year + ' ' + make + ' ' + model,
-//                'image_url': imageUrl,
-//                'subtitle':'Lease now!',
-//                'buttons':[
-//                  {
-//                    'type':'postback',
-//                    'payload': ' ',
-//                    'title':'View Details'
-//                  },
-//                  {
-//                    'type':'postback',
-//                    'payload': ' ',
-//                    'title':'All ' + make + ' Offers',
-//                  }
-//                ]
-//              }
-//            ]
-//          }
-//        }
-//        return attachment;
-// }

@@ -18,7 +18,7 @@ module.exports = function(controller) {
         .first('currentFinancePreference')
         .update({leaseMilesPerYear: vars.miles_per_year,
                 leaseTotalDriveoff: vars.total_driveoff,
-                zipcode: vars.lease_zipcode,
+                zipcode: vars.zipcode,
                 creditScore: vars.credit_score})
         .then(function() { });
 
@@ -26,8 +26,6 @@ module.exports = function(controller) {
         .where('uuid', convo.context.user)
         .first('currentFinancePreference')
         .then(function(res) {
-
-          console.log(res);
           if (res.currentFinancePreference !== null && res.currentFinancePreference !== 'lease') {
             knex.table('users')
                 .where('uuid', convo.context.user)
