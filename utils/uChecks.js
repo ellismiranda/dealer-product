@@ -5,8 +5,8 @@ module.exports = {
 }
 
 function localCheck(txt) {
-  var isLocal = false;
-  var toDeliver = null;
+  let isLocal = false;
+  let toDeliver = null;
   console.log('checking locally..');
   LOCAL_CHECKS.forEach((check) => {
     if (txt.toLowerCase() === check.trigger) {

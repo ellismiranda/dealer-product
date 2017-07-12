@@ -4,14 +4,14 @@ module.exports = {
   pull,
 }
 
-var request = require('../utils/uRequests');
+const request = require('../utils/uRequests');
 
 //main method, returns JS object of data
 async function pull(query) {
   const body = await clapi(query);
-  var res = await request.getClapiData(body);
-  res = JSON.parse(res.text);
-  return res.data;
+  const res = await request.getClapiData(body);
+  const parsedRes = JSON.parse(res.text);
+  return parsedRes.data;
 }
 
 //change the defaults so that it has all info for lease / finance to put on carousel card
@@ -69,9 +69,9 @@ function getDefaultRequest() {
 }
 
 async function clapi(query) {
-  var request = await getDefaultRequest();
-  var result = query.result;
-  var car = result.parameters.car[0];
+  const request = await getDefaultRequest();
+  const result = query.result;
+  const car = result.parameters.car[0];
   if (car.make) request.constraints.make = [ car.make ];
   if (car.model) request.constraints.model = [ car.model ];
   if (car.year) request.constaints.year = car.year;

@@ -6,7 +6,7 @@ module.exports = {
   choose,
 }
 
-var clapi = require('../utils/uClapi');
+const clapi = require('../utils/uClapi');
 
 async function choose(query) {  //this should decide if it's a single car or a request for multiple
   if (query.result.parameters.car.length == 1 && query.result.parameters.car[0].model) { //if it has a single request and it has a model
@@ -20,21 +20,21 @@ async function choose(query) {  //this should decide if it's a single car or a r
 
 //this should decide if its more than one specific models, or a group of cars
 async function requestGroup(query) {
-  var data = await clapi.pull(query);
+  const data = await clapi.pull(query);
   return makeAttachment(makeGroupElements(data));
 }
 
 //Returns a single specific car's carousel element
 async function requestDetails(query) {
-  var data = await clapi.pull(query);
-  var attachment = { };
+  const data = await clapi.pull(query);
+  let attachment = { };
   attachment = await makeAttachment(makeElement(data[0].make, data[0].model, data[0].year, data[0].images[1].url));
   return attachment;
 }
 
 //Creates the 'elements' piece of the attachment for multiple cars
 function makeGroupElements(cars) {
-  var elements = [ ];
+  const elements = [ ];
   for (var i = 0; i < cars.length && i < 5; i++) {
     elements.push(makeElement(cars[i].make, cars[i].model, cars[i].year, cars[i].images[1].url));
   }
