@@ -46,7 +46,7 @@ function makeSingleElement(make, model, year, imageUrl) {
 //Creates the 'elements' piece of the attachment for multiple cars
 function makeGroupElements(cars) {
   const elements = [ ];
-  for (var i = 0; i < cars.length && i < 10; i++) {
+  for (let i = 0; i < cars.length && i < 10; i++) {
     let currentElement = makeElement(cars[i].make, cars[i].model, cars[i].year, cars[i].images[1].url)
     elements.push(JSON.stringify(currentElement));
   }
