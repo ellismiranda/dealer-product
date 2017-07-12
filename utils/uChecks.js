@@ -16,6 +16,7 @@ function localCheck(txt) {
   });
   if (txt.indexOf('_details') > -1 || txt.indexOf('_gallery') > -1) {
     isLocal = true;
+    //hi
   }
   if (!isLocal) {
     return ['ERROR', null];
