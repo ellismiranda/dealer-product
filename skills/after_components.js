@@ -10,24 +10,31 @@ var knex = require('knex')({
 
 module.exports = function(controller) {
 
+  // THE THREE FOLLOWING FUNCTIONS NEED TO BE TURNED INTO ONE AT SOME POINT
+  // OR ENCAPSULATE KNEX AND THEN PASS IN SPECIFIC PARAMETERS FOR EACH (SLIM DOWN THE CODE)
+
   controller.studio.after('lease', function(convo, next) {
-    var vars = convo.extractResponses();
+
+    const {
+      miles_per_year: leaseMilesPerYear,
+      total_driveoff: leaseTotalDriveoff,
+      zipcode,
+      credit_score: creditScore
+    } = convo.extractResponses();
 
     knex.table('users')
         .where('uuid', convo.context.user)
         .first('currentFinancePreference')
-        .update({leaseMilesPerYear: vars.miles_per_year,
-                leaseTotalDriveoff: vars.total_driveoff,
-                zipcode: vars.lease_zipcode,
-                creditScore: vars.credit_score})
+        .update({leaseMilesPerYear,
+                leaseTotalDriveoff,
+                zipcode,
+                creditScore})
         .then(function() { });
 
     knex.table('users')
         .where('uuid', convo.context.user)
         .first('currentFinancePreference')
         .then(function(res) {
-
-          console.log(res);
           if (res.currentFinancePreference !== null && res.currentFinancePreference !== 'lease') {
             knex.table('users')
                 .where('uuid', convo.context.user)
@@ -43,12 +50,15 @@ module.exports = function(controller) {
   })
 
   controller.studio.after('cash', function(convo, next) {
-    var vars = convo.extractResponses();
+
+    const {
+      zipcode,
+    } = convo.extractResponses();
 
     knex.table('users')
         .where('uuid', convo.context.user)
         .first('currentFinancePreference')
-        .update({zipcode: vars.zipcode})
+        .update({zipcode})
         .then(function() { });
 
     knex.table('users')
@@ -70,15 +80,21 @@ module.exports = function(controller) {
   })
 
   controller.studio.after('finance', function(convo, next) {
-    var vars = convo.extractResponses();
+
+    const {
+      finance_years: financeYears,
+      finance_down: financeDown,
+      zipcode,
+      credit_score: creditScore
+    } = convo.extractResponses();
 
     knex.table('users')
         .where('uuid', convo.context.user)
         .first('currentFinancePreference')
-        .update({financeYears: vars.finance_years,
-                financeDown: vars.finance_down,
-                zipcode: vars.zipcode,
-                creditScore: vars.credit_score})
+        .update({financeYears,
+                financeDown,
+                zipcode,
+                creditScore})
         .then(function() { });
 
     knex.table('users')

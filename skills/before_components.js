@@ -8,6 +8,9 @@ var knex = require('knex')({
   }
 });
 
+const knex2 = require('../utils/uKnex.js');
+const tools = require('../utils/uTools.js');
+
 module.exports = function(controller) {
 
   controller.studio.before('has_td_scheduled', function(convo, next) {
@@ -22,13 +25,41 @@ module.exports = function(controller) {
     next();
   })
 
+  //makes use of encapsulated knex calls, EXAMPLE FOR ENCAPSULATING OTHERS
+  controller.studio.before('test_drive', async function(convo, next) {
+    const res = await knex2.getUserData('tdDate', convo.context.user);
+    convo.setVar('_td_date', res.tdDate);
+    next();
+  })
+
+  //checks whether tomorrow's date is necessary for the test drive
+  controller.studio.beforeThread('test_drive', 'td_time', function(convo, next) {
+
+    const tomorrow = tools.getTomorrowDate();
+
+    knex.table('users')
+        .where('uuid', convo.context.user)
+        .first('tdDate')
+        .then(function(res) {
+          if (res.tdDate == null) {
+            convo.setVar('_td_date', tomorrow);
+            knex.table('users')
+                .where('uuid', convo.context.user)
+                .update('tdDate', tomorrow)
+                .then(function() { });
+          }
+        })
+
+    next();
+  })
+
   controller.studio.before('lease', function(convo, next) {
     knex.table('users')
         .where('uuid', convo.context.user)
         .first('leaseMilesPerYear','leaseTotalDriveoff','zipcode', 'currentFinancePreference')
         .then(function(res) {
           var paymentOption = res.currentFinancePreference;
-          if (paymentOption !== '') {
+          if (paymentOption !== null) {
             if (paymentOption === 'lease') {
               convo.setVar('miles_per_year', res.leaseMilesPerYear);
               convo.setVar('total_driveoff', res.leaseTotalDriveoff);
@@ -52,7 +83,7 @@ module.exports = function(controller) {
         .first('zipcode', 'currentFinancePreference')
         .then(function(res) {
           var paymentOption = res.currentFinancePreference;
-          if (paymentOption !== '') {
+          if (paymentOption !== null) {
             if (paymentOption === 'cash') {
               convo.setVar('zipcode', res.zipcode);
               convo.gotoThread('answered_cashq');
@@ -74,7 +105,7 @@ module.exports = function(controller) {
         .first('financeYears','financeDown','zipcode', 'currentFinancePreference')
         .then(function(res) {
           var paymentOption = res.currentFinancePreference;
-          if (paymentOption !== '') {
+          if (paymentOption !== null) {
             if (paymentOption === 'finance') {
               convo.setVar('finance_years', res.financeYears);
               convo.setVar('finance_down', res.financeDown);

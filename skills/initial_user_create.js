@@ -15,9 +15,6 @@ module.exports = function(controller) {
   //defaulting that tomorrow works as a test drive date
   controller.studio.before('Cara_welcome', async function(convo, next) {
 
-    var today = new Date();
-    var date = (today.getMonth() + 1) + '.' + (today.getDate()+1) + '.' + (today.getFullYear());
-
     knex.table('users').where('uuid', convo.context.user).first('uuid', 'firstName', 'lastName').then(async function(res) {
       if (res === undefined) {
 
@@ -34,7 +31,7 @@ module.exports = function(controller) {
           zipcode: null,
           creditScore: null,
           tdTomorrow: true,
-          tdDate: date,
+          tdDate: null,
           hasTdScheduled: false
         })
         .then(function() { });

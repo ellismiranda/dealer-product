@@ -86,7 +86,7 @@ module.exports = function(controller) {
   controller.studio.validate('different_car', 'other_coloroptions', function(convo, next) {
     var other_coloroptions = convo.extractResponse('other_coloroptions');
     convo.setVar('other_coloroptions', other_coloroptions);
-    klex.table('users')
+    knex.table('users')
         .where('uuid', convo.context.user)
         .update('otherColorOptions', other_coloroptions)
         .then(function() { });

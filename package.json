@@ -14,7 +14,7 @@
     "botkit": "^0.5.4",
     "botkit-storage-mongo": "^1.0.6",
     "botkit-storage-postgres": "^0.1.0",
-    "dashbot": "^9.1.0",
+    "dashbot": "^9.2.0",
     "debug": "^2.6.8",
     "express": "^4.15.3",
     "knex": "^0.13.0",
