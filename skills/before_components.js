@@ -25,20 +25,10 @@ module.exports = function(controller) {
     next();
   })
 
-  //sets the variable in the script? not necessary!
-  controller.studio.before('test_drive', function(convo, next) {
-    knex2.getUserData('tdDate', convo.context.user, function(res) {
-      convo.setVar('_td_date', res.tdDate);
-    });
-
-    // knex.table('users')
-    //     .where('uuid', convo.context.user)
-    //     .first('tdDate')
-    //     .then(function(res) {
-    //       convo.setVar('_td_date', res.tdDate);
-    //       console.log(res.tdDate);
-    //     })
-
+  //makes use of encapsulated knex calls, EXAMPLE FOR ENCAPSULATING OTHERS
+  controller.studio.before('test_drive', async function(convo, next) {
+    const res = await knex2.getUserData('tdDate', convo.context.user);
+    convo.setVar('_td_date', res.tdDate);
     next();
   })
 

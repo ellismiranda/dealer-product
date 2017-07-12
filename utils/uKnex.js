@@ -12,10 +12,8 @@ module.exports = {
   getUserData,
 }
 
-async function getUserData(firstData, user, callback) {
-  console.log('gettinguserdata');
-  const a = await knex.table('users')
-      .where('uuid', user)
-      .first('tdDate')
-      .then(callback);
-}
+function getUserData(firstData, user) {
+  return knex.table('users')
+              .where('uuid', user)
+              .first(firstData);
+}           
