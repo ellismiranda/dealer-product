@@ -8,6 +8,7 @@ var knex = require('knex')({
   }
 });
 
+const knex2 = require('../utils/uKnex.js');
 const tools = require('../utils/uTools.js');
 
 module.exports = function(controller) {
@@ -26,12 +27,18 @@ module.exports = function(controller) {
 
   //sets the variable in the script? not necessary!
   controller.studio.before('test_drive', function(convo, next) {
-    knex.table('users')
-        .where('uuid', convo.context.user)
-        .first('tdDate')
-        .then(function(res) {
-          convo.setVar('_td_date', res.tdDate);
-        })
+    knex2.getUserData('tdDate', convo.context.user, function(res) {
+      convo.setVar('_td_date', res.tdDate);
+    });
+
+    // knex.table('users')
+    //     .where('uuid', convo.context.user)
+    //     .first('tdDate')
+    //     .then(function(res) {
+    //       convo.setVar('_td_date', res.tdDate);
+    //       console.log(res.tdDate);
+    //     })
+
     next();
   })
 

@@ -11,6 +11,6 @@ function getTomorrowDate() {
   const month = date.getMonth() + 1;
   const day = date.getDate() + 1;
   const year = date.getFullYear();
-  const tomorrow = '${month}.${day}.${year}'
+  const tomorrow = `${month}.${day}.${year}`
   return tomorrow;
 }
