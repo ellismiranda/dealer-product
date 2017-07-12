@@ -3,34 +3,14 @@
 //  *not partiularly useful yet
 
 module.exports = {
-  cFormatter,
+  getTomorrowDate,
 }
 
-function cFormatter(make, model, year, image_url) {
-  var attachment = {
-      'type':'template',
-      'payload':{
-           'template_type':'generic',
-           'elements':[
-             {
-               'title': year + ' ' + make + ' ' + model,
-               'image_url': image_url,
-               'subtitle':'Lease now!',
-               'buttons':[
-                 {
-                   'type':'postback',
-                   'payload': '',
-                   'title':'View Details'
-                 },
-                 {
-                   'type':'postback',
-                   'payload': '',
-                   'title':'All ' + make + ' Offers',
-                 }
-               ]
-             },
-           ]
-         }
-       }
-       return attachment;
+function getTomorrowDate() {
+  const date = new Date();
+  const month = date.getMonth() + 1;
+  const day = date.getDate() + 1;
+  const year = date.getFullYear();
+  const tomorrow = '${month}.${day}.${year}'
+  return tomorrow;
 }

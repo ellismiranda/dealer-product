@@ -14,7 +14,7 @@ function localCheck(txt) {
       toDeliver = check.payload;
     }
   });
-  if (txt.indexOf('_details') > -1 || txt.indexOf('_gallery') > -1) {
+  if (txt.includes('_details') || txt.includes('_gallery')) {
     isLocal = true;
   }
   if (!isLocal) {

@@ -8,6 +8,8 @@ var knex = require('knex')({
   }
 });
 
+const tools = require('../utils/uTools.js');
+
 module.exports = function(controller) {
 
   controller.studio.before('has_td_scheduled', function(convo, next) {
@@ -35,14 +37,13 @@ module.exports = function(controller) {
 
   //checks whether tomorrow's date is necessary for the test drive
   controller.studio.beforeThread('test_drive', 'td_time', function(convo, next) {
-    const date = new Date();
-    const tomorrow = (date.getMonth() + 1) + '.' + (date.getDate() + 1) + '.' + (date.getFullYear());
+
+    const tomorrow = tools.getTomorrowDate();
 
     knex.table('users')
         .where('uuid', convo.context.user)
         .first('tdDate')
         .then(function(res) {
-          console.log(res.tdDate);
           if (res.tdDate == null) {
             convo.setVar('_td_date', tomorrow);
             knex.table('users')
