@@ -1,4 +1,4 @@
-var knex = require('knex')({
+const knex = require('knex')({
   client: 'postgresql',
   connection: {
     host: process.env.pgHost,
@@ -16,4 +16,4 @@ function getUserData(firstData, user) {
   return knex.table('users')
               .where('uuid', user)
               .first(firstData);
-}           
+}

@@ -1,14 +1,14 @@
-var apiaibotkit = require('api-ai-botkit-facebook');
-var apiai = apiaibotkit(process.env.apiaiToken);
+const apiaibotkit = require('api-ai-botkit-facebook');
+const apiai = apiaibotkit(process.env.apiaiToken);
 
 // SINGLE DOT = 'HERE'
 // DOUBLE DOT = 'GO UP 1'
-var clapi = require('../utils/uClapi.js');
-var checks = require('../utils/uChecks.js');
-var tools = require('../utils/uTools.js');
-var handler = require('../utils/uRequestHandler.js');
+const clapi = require('../utils/uClapi.js');
+const checks = require('../utils/uChecks.js');
+const tools = require('../utils/uTools.js');
+const handler = require('../utils/uRequestHandler.js');
 
-var knex = require('knex')({
+const knex = require('knex')({
   client: 'postgresql',
   connection: {
     host: process.env.pgHost,
@@ -31,7 +31,6 @@ module.exports = function(controller) {
        apiai.process(message, bot);
      } else {
        console.log('Running Studio script...');
-       console.log(message.text);
        controller.studio.run(bot, localPayload, message.user, message.channel);
      }
    })
@@ -43,9 +42,8 @@ module.exports = function(controller) {
     console.log(resp.result);
     console.log(resp.result.parameters);
 
-    var date = new Date();
-    var currentTime = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-    var currentDate = date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear();
+    const currentTime = tools.getTime();
+    const currentDate = tools.getTodayDate();
 
     //log the date, time, message, and nlp response
     knex.table('users')
@@ -73,7 +71,7 @@ module.exports = function(controller) {
   //HEAVY TESTING - THIS NEEDS CLAPI IMPLEMENTED
   //this should give details about a car / show off the car
   .action('request.details', async function(message, resp, bot) {
-    var replyAttachment = await handler.choose(resp);
+    const replyAttachment = await handler.choose(resp);
     bot.reply(message, {
       attachment: replyAttachment,
     })
@@ -81,7 +79,7 @@ module.exports = function(controller) {
 
    //pretty basic currently, returns multiple carousel elements
   .action('request.group', async function(message, resp, bot){
-    var replyAttachment = await handler.choose(resp);
+    const replyAttachment = await handler.choose(resp);
     bot.reply(message, { attachment: replyAttachment});
   })
 
@@ -106,14 +104,13 @@ module.exports = function(controller) {
   //e.g. "I care about performance and utility" => performance+1, utility+1
   .action('change.preferences', function(message, resp, bot) {
     //grab the preferences
-    var reqAtts = resp.result.parameters.requestedAttributes;
+    const reqAtts = resp.result.parameters.requestedAttributes;
     //grab the language modifier
-    var modifier = resp.result.parameters.modifier;
+    const modifier = resp.result.parameters.modifier;
 
     knex.table('users').where('uuid', message.user).first('preferences').then(function(res) {
-      var tempData = res;
-      var newPrefs = tempData.preferences;
-      var pref;
+      const newPrefs = res.preferences;
+      let pref;
       for (pref in newPrefs) {
         if (modifier == 'singular') {
           if (reqAtts.indexOf(pref) > -1) {
@@ -131,7 +128,6 @@ module.exports = function(controller) {
           }
         }
       }
-      tempData.preferences = newPrefs;
       knex.table('users').where('uuid', message.user).update({preferences: newPrefs}).then(function() { });
     })
     bot.reply(message, "Okay, I will adjust car selection accordingly.");
@@ -160,7 +156,6 @@ module.exports = function(controller) {
   // //standard response message in the case of
   .action('input.unknown', function (message, resp, bot) {
     bot.reply(message, resp.result.fulfillment.speech);
-    // controller.studio.runTrigger(bot, message.text, message.user, message.channel);
   })
 
   //CATCH-ALL: WILL RUN ANYTHING THROUGH STUDIO THAT A .action() HANDLER DOESN'T EXIST FOR

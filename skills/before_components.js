@@ -1,4 +1,4 @@
-var knex = require('knex')({
+const knex = require('knex')({
   client: 'postgresql',
   connection: {
     host: process.env.pgHost,
@@ -58,7 +58,7 @@ module.exports = function(controller) {
         .where('uuid', convo.context.user)
         .first('leaseMilesPerYear','leaseTotalDriveoff','zipcode', 'currentFinancePreference')
         .then(function(res) {
-          var paymentOption = res.currentFinancePreference;
+          const paymentOption = res.currentFinancePreference;
           if (paymentOption !== null) {
             if (paymentOption === 'lease') {
               convo.setVar('miles_per_year', res.leaseMilesPerYear);
@@ -82,7 +82,7 @@ module.exports = function(controller) {
         .where('uuid', convo.context.user)
         .first('zipcode', 'currentFinancePreference')
         .then(function(res) {
-          var paymentOption = res.currentFinancePreference;
+          const paymentOption = res.currentFinancePreference;
           if (paymentOption !== null) {
             if (paymentOption === 'cash') {
               convo.setVar('zipcode', res.zipcode);
@@ -104,7 +104,7 @@ module.exports = function(controller) {
         .where('uuid', convo.context.user)
         .first('financeYears','financeDown','zipcode', 'currentFinancePreference')
         .then(function(res) {
-          var paymentOption = res.currentFinancePreference;
+          const paymentOption = res.currentFinancePreference;
           if (paymentOption !== null) {
             if (paymentOption === 'finance') {
               convo.setVar('finance_years', res.financeYears);

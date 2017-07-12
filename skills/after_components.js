@@ -1,4 +1,4 @@
-var knex = require('knex')({
+const knex = require('knex')({
   client: 'postgresql',
   connection: {
     host: process.env.pgHost,

@@ -1,6 +1,6 @@
-var request = require('../utils/uRequests.js');
+const request = require('../utils/uRequests.js');
 
-var knex = require('knex')({
+const knex = require('knex')({
   client: 'postgresql',
   connection: {
     host: process.env.pgHost,
@@ -18,8 +18,8 @@ module.exports = function(controller) {
     knex.table('users').where('uuid', convo.context.user).first('uuid', 'firstName', 'lastName').then(async function(res) {
       if (res === undefined) {
 
-        var userData = await request.getFbData(convo.context.user);
-        userData = JSON.parse(userData.res.text);
+        const data = await request.getFbData(convo.context.user);
+        const userData = JSON.parse(data.res.text);
 
         knex.table('users').insert({
           uuid: convo.context.user,

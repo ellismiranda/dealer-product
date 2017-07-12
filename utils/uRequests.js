@@ -9,7 +9,7 @@ module.exports = {
 var request = require('superagent');
 
 function getFbData(id) {
-  var url = "https://graph.facebook.com/v2.6/" + id + "?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=" + process.env.page_token;
+  const url = "https://graph.facebook.com/v2.6/" + id + "?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=" + process.env.page_token;
   return request.get(url);
 }
 
