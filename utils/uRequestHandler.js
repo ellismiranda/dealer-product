@@ -28,15 +28,20 @@ async function requestGroup(query) {
 async function requestDetails(query) {
   const data = await clapi.pull(query);
   let attachment = { };
-  attachment = await makeAttachment(makeElement(data[0].make, data[0].model, data[0].year, data[0].images[1].url));
+  attachment = await makeAttachment(makeSingleElement(data[0].make, data[0].model, data[0].year, data[0].images[1].url));
   return attachment;
+}
+
+function makeSingleElement(make, model, year, imageUrl) {
+  return [ makeElement(make, model, year, imageUrl)];
 }
 
 //Creates the 'elements' piece of the attachment for multiple cars
 function makeGroupElements(cars) {
   const elements = [ ];
-  for (var i = 0; i < cars.length && i < 5; i++) {
-    elements.push(makeElement(cars[i].make, cars[i].model, cars[i].year, cars[i].images[1].url));
+  for (var i = 0; i < cars.length && i < 10; i++) {
+    let currentElement = makeElement(cars[i].make, cars[i].model, cars[i].year, cars[i].images[1].url)
+    elements.push(JSON.stringify(currentElement));
   }
   return elements;
 }
@@ -53,24 +58,24 @@ function makeAttachment(elements) {
 }
 
 //Formats a single carousel element
-function makeElement(make, model, year,imageUrl) {
-  return [
+function makeElement(make, model, year, imageUrl) {
+  const obj =
       {
-      'title': year + ' ' + make + ' ' + model,
-      'image_url': imageUrl,
-      'subtitle':'Lease now!',
-      'buttons':[
+      title: year + ' ' + make + ' ' + model,
+      image_url: imageUrl,
+      subtitle:'Lease now!',
+      buttons:[
         {
-          'type':'postback',
-          'payload': ' ',
-          'title':'View Details'
+          type:'postback',
+          payload: ' ',
+          title:'View Details'
         },
         {
-          'type':'postback',
-          'payload': ' ',
-          'title':'All ' + make + ' Offers',
+          type:'postback',
+          payload: ' ',
+          title:'All ' + make + ' Offers',
         }
       ]
-    }
-  ];
+    };
+    return obj;
 }
