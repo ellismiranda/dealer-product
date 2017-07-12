@@ -85,7 +85,7 @@ module.exports = function(controller) {
         .first('zipcode', 'currentFinancePreference')
         .then(function(res) {
           var paymentOption = res.currentFinancePreference;
-          if (paymentOption !== '') {
+          if (paymentOption !== null) {
             if (paymentOption === 'cash') {
               convo.setVar('zipcode', res.zipcode);
               convo.gotoThread('answered_cashq');
@@ -107,7 +107,7 @@ module.exports = function(controller) {
         .first('financeYears','financeDown','zipcode', 'currentFinancePreference')
         .then(function(res) {
           var paymentOption = res.currentFinancePreference;
-          if (paymentOption !== '') {
+          if (paymentOption !== null) {
             if (paymentOption === 'finance') {
               convo.setVar('finance_years', res.financeYears);
               convo.setVar('finance_down', res.financeDown);
