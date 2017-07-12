@@ -35,8 +35,8 @@ module.exports = function(controller) {
 
   //checks whether tomorrow's date is necessary for the test drive
   controller.studio.beforeThread('test_drive', 'td_time', function(convo, next) {
-    var today = new Date();
-    var date = (today.getMonth() + 1) + '.' + (today.getDate()+1) + '.' + (today.getFullYear());
+    const date = new Date();
+    const tomorrow = (date.getMonth() + 1) + '.' + (date.getDate() + 1) + '.' + (date.getFullYear());
 
     knex.table('users')
         .where('uuid', convo.context.user)
@@ -44,10 +44,10 @@ module.exports = function(controller) {
         .then(function(res) {
           console.log(res.tdDate);
           if (res.tdDate == null) {
-            convo.setVar('_td_date', date);
+            convo.setVar('_td_date', tomorrow);
             knex.table('users')
                 .where('uuid', convo.context.user)
-                .update('tdDate', date)
+                .update('tdDate', tomorrow)
                 .then(function() { });
           }
         })
