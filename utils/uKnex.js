@@ -10,10 +10,18 @@ const knex = require('knex')({
 
 module.exports = {
   getUserData,
+  update,
 }
 
 function getUserData(firstData, user) {
   return knex.table('users')
               .where('uuid', user)
               .first(firstData);
+}
+
+function update(updates, user) {
+  knex.table('users')
+      .where('uuid', user)
+      .update(updates)
+      .then(function() { });
 }
