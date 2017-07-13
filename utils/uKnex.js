@@ -12,6 +12,7 @@ module.exports = {
   getUserData,
   update,
   insert,
+  logMessage,
 }
 
 function getUserData(firstData, user) {
@@ -29,6 +30,12 @@ function update(updates, user) {
 
 function insert(inserts, user) {
   knex.table('users')
+      .insert(inserts)
+      .then(function() { });
+}
+
+function logMessage(inserts) {
+  knex.table('messages')
       .insert(inserts)
       .then(function() { });
 }

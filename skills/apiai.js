@@ -8,6 +8,8 @@ const checks = require('../utils/uChecks.js');
 const tools = require('../utils/uTools.js');
 const handler = require('../utils/uRequestHandler.js');
 
+const knex2 = require('../utils/uKnex.js');
+
 const knex = require('knex')({
   client: 'postgresql',
   connection: {
@@ -36,28 +38,26 @@ module.exports = function(controller) {
    })
 
   //produces a nice log of the result of .process(message)
-  apiai.all(function (message, resp, bot) {
+  apiai.all(async function (message, resp, bot) {
 
+    //logging the processed apiai info
     console.log("apiai result:");
     console.log(resp.result);
     console.log(resp.result.parameters);
 
-    const currentTime = tools.getTime();
-    const currentDate = tools.getTodayDate();
-
     //log the date, time, message, and nlp response
-    knex.table('users')
-        .where('uuid', message.user)
-        .first('id')
-        .then(function(res) {
-          knex.table('messages')
-              .insert({user_id: res.id,
-                      msg_str: message.text,
-                      processed_nlp: resp.result,
-                      time: currentTime,
-                      date: currentDate})
-              .then(function() { });
-        });
+    const currentTime = await tools.getTime();
+    const currentDate = await tools.getTodayDate();
+
+    const { id: userId } = await knex2.getUserData('id', message.user);
+    const msgStr = message.text;
+    const processedMsg = resp.result;
+
+    await knex2.logMessage({user_id: userId,
+                            msg_str: msgStr,
+                            processed_nlp: processedMsg,
+                            time: currentTime,
+                            date: currentDate});
   })
 
 
