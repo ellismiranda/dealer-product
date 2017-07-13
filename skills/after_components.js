@@ -16,34 +16,34 @@ module.exports = function(controller) {
   controller.studio.after('lease', function(convo, next) {
 
     const {
-      miles_per_year: leaseMilesPerYear,
-      total_driveoff: leaseTotalDriveoff,
+      miles_per_year: lease_miles_per_year,
+      total_driveoff: lease_total_driveoff,
       zipcode,
-      credit_score: creditScore
+      credit_score: credit_score
     } = convo.extractResponses();
 
     knex.table('users')
         .where('uuid', convo.context.user)
-        .first('currentFinancePreference')
-        .update({leaseMilesPerYear,
-                leaseTotalDriveoff,
+        .first('current_finance_preference')
+        .update({lease_miles_per_year,
+                lease_total_driveoff,
                 zipcode,
-                creditScore})
+                credit_score})
         .then(function() { });
 
     knex.table('users')
         .where('uuid', convo.context.user)
-        .first('currentFinancePreference')
+        .first('current_finance_preference')
         .then(function(res) {
-          if (res.currentFinancePreference !== null && res.currentFinancePreference !== 'lease') {
+          if (res.current_finance_preference !== null && res.current_finance_preference !== 'lease') {
             knex.table('users')
                 .where('uuid', convo.context.user)
-                .update({lastFinancePreference: res.currentFinancePreference})
+                .update({last_finance_preference: res.currentFinancePreference})
                 .then(function() { });
           }
           knex.table('users')
               .where('uuid', convo.context.user)
-              .update({currentFinancePreference: 'lease'})
+              .update({current_finance_preference: 'lease'})
               .then(function() { });
           });
     next();
@@ -57,23 +57,23 @@ module.exports = function(controller) {
 
     knex.table('users')
         .where('uuid', convo.context.user)
-        .first('currentFinancePreference')
+        .first('current_finance_preference')
         .update({zipcode})
         .then(function() { });
 
     knex.table('users')
         .where('uuid', convo.context.user)
-        .first('currentFinancePreference')
+        .first('current_finance_preference')
         .then(function(res) {
-          if (res.currentFinancePreference !== null && res.currentFinancePreference !== 'cash') {
+          if (res.current_finance_preference !== null && res.current_finance_preference !== 'cash') {
             knex.table('users')
                 .where('uuid', convo.context.user)
-                .update({lastFinancePreference: res.currentFinancePreference})
+                .update({last_finance_preference: res.current_finance_preference})
                 .then(function() { });
           }
           knex.table('users')
               .where('uuid', convo.context.user)
-              .update({currentFinancePreference: 'cash'})
+              .update({current_finance_preference: 'cash'})
               .then(function() { });
         });
     next();
@@ -82,34 +82,34 @@ module.exports = function(controller) {
   controller.studio.after('finance', function(convo, next) {
 
     const {
-      finance_years: financeYears,
-      finance_down: financeDown,
+      finance_years: finance_years,
+      finance_down: finance_down,
       zipcode,
-      credit_score: creditScore
+      credit_score: credit_score
     } = convo.extractResponses();
 
     knex.table('users')
         .where('uuid', convo.context.user)
-        .first('currentFinancePreference')
-        .update({financeYears,
-                financeDown,
+        .first('current_finance_preference')
+        .update({finance_years,
+                finance_down,
                 zipcode,
-                creditScore})
+                credit_score})
         .then(function() { });
 
     knex.table('users')
         .where('uuid', convo.context.user)
-        .first('currentFinancePreference')
+        .first('current_finance_preference')
         .then(function(res) {
-          if (res.currentFinancePreference !== null && res.currentFinancePreference !== 'finance') {
+          if (res.current_finance_preference !== null && res.current_finance_preference !== 'finance') {
             knex.table('users')
                 .where('uuid', convo.context.user)
-                .update({lastFinancePreference: res.currentFinancePreference})
+                .update({last_finance_preference: res.current_finance_preference})
                 .then(function() { });
           }
           knex.table('users')
               .where('uuid', convo.context.user)
-              .update({currentFinancePreference: 'finance'})
+              .update({current_finance_preference: 'finance'})
               .then(function() { });
         });
     next();

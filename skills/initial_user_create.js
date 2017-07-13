@@ -15,7 +15,7 @@ module.exports = function(controller) {
   //defaulting that tomorrow works as a test drive date
   controller.studio.before('Cara_welcome', async function(convo, next) {
 
-    knex.table('users').where('uuid', convo.context.user).first('uuid', 'firstName', 'lastName').then(async function(res) {
+    knex.table('users').where('uuid', convo.context.user).first('uuid', 'first_name', 'last_name').then(async function(res) {
       if (res === undefined) {
 
         const data = await request.getFbData(convo.context.user);
@@ -23,22 +23,22 @@ module.exports = function(controller) {
 
         knex.table('users').insert({
           uuid: convo.context.user,
-          firstName: userData.first_name,
-          lastName: userData.last_name,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
           gender: userData.gender,
           email: '',
-          phoneNumber: '',
+          phone_number: '',
           zipcode: null,
-          creditScore: null,
-          tdTomorrow: true,
-          tdDate: null,
-          hasTdScheduled: false
+          credit_score: null,
+          td_tomorrow: true,
+          td_date: null,
+          has_td_scheduled: false
         })
         .then(function() { });
 
         convo.setVar('firstName', userData.first_name);
       } else {
-        convo.setVar('firstName', res.firstName);
+        convo.setVar('firstName', res.first_name);
       }
     })
     next();
