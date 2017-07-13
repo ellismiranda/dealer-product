@@ -1,15 +1,10 @@
-//random tool scripts*
-
-//  *not partiularly useful yet
+//random tool scripts
 
 module.exports = {
   getTodayDate,
   getTomorrowDate,
   getTime,
-  makeSingleElement,
-  makeGroupElements,
   makeAttachment,
-  makeElement
 }
 
 function getTodayDate() {
@@ -39,36 +34,39 @@ function getTime() {
   return time;
 }
 
-function makeSingleElement(make, model, year, imageUrl) {
-  return [ makeElement(make, model, year, imageUrl)];
-}
-
 //Creates the 'elements' piece of the attachment for multiple cars
 function makeGroupElements(cars) {
   const elements = [ ];
   for (let i = 0; i < cars.length && i < 10; i++) {
-    let currentElement = makeElement(cars[i].make, cars[i].model, cars[i].year, cars[i].images[1].url)
-    elements.push(JSON.stringify(currentElement));
+    const {make, model, year, images} = cars[i];
+    
+    //TED IS A GENIUS
+    const filterImages = images.filter(img => img.type === 'frontQuarter')
+    const secondFilterImages = (filterImages.length > 0) ? filterImages[0] : images[0];
+    const finalImage = secondFilterImages ? secondFilterImages : {url: ''};
+
+    const currentElement = makeElement(make, model, year, finalImage.url)
+    elements.push(currentElement);
   }
   return elements;
 }
 
 //Formats the entire attachment once passed the array of carousel elements
-function makeAttachment(elements) {
+async function makeAttachment(cars) {
+  const elements = await makeGroupElements(cars);
   return {
-      'type':'template',
-      'payload':{
-           'template_type':'generic',
-           'elements': elements
+      type:'template',
+      payload:{
+           template_type:'generic',
+           elements: elements,
       }
   }
 }
 
 //Formats a single carousel element
 function makeElement(make, model, year, imageUrl) {
-  const obj =
-      {
-      title: year + ' ' + make + ' ' + model,
+  return {
+      title: `${year} ${make} ${model}`,
       image_url: imageUrl,
       subtitle:'Lease now!',
       buttons:[
@@ -80,9 +78,8 @@ function makeElement(make, model, year, imageUrl) {
         {
           type:'postback',
           payload: ' ',
-          title:'All ' + make + ' Offers',
+          title:`All ${make} Offers`,
         }
       ]
     };
-    return obj;
 }
