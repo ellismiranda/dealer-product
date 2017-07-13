@@ -16,10 +16,10 @@ module.exports = function(controller) {
   controller.studio.before('has_td_scheduled', function(convo, next) {
     knex.table('users')
         .where('uuid', convo.context.user)
-        .first('tdDate', 'tdTime', 'location', 'tdCarMake')
+        .first('td_date', 'td_time', 'location', 'td_car_make')
         .then(function(res) {
-          convo.setVar('_td_date', res.tdDate);
-          convo.setVar('_td_time', res.tdTime);
+          convo.setVar('_td_date', res.td_date);
+          convo.setVar('_td_time', res.td_time);
           convo.setVar('_location', res.location);
         })
     next();
@@ -27,8 +27,8 @@ module.exports = function(controller) {
 
   //makes use of encapsulated knex calls, EXAMPLE FOR ENCAPSULATING OTHERS
   controller.studio.before('test_drive', async function(convo, next) {
-    const res = await knex2.getUserData('tdDate', convo.context.user);
-    convo.setVar('_td_date', res.tdDate);
+    const res = await knex2.getUserData('td_date', convo.context.user);
+    convo.setVar('_td_date', res.td_date);
     next();
   })
 
@@ -39,13 +39,13 @@ module.exports = function(controller) {
 
     knex.table('users')
         .where('uuid', convo.context.user)
-        .first('tdDate')
+        .first('td_date')
         .then(function(res) {
-          if (res.tdDate == null) {
+          if (res.td_date == null) {
             convo.setVar('_td_date', tomorrow);
             knex.table('users')
                 .where('uuid', convo.context.user)
-                .update('tdDate', tomorrow)
+                .update('td_date', tomorrow)
                 .then(function() { });
           }
         })
@@ -56,13 +56,13 @@ module.exports = function(controller) {
   controller.studio.before('lease', function(convo, next) {
     knex.table('users')
         .where('uuid', convo.context.user)
-        .first('leaseMilesPerYear','leaseTotalDriveoff','zipcode', 'currentFinancePreference')
+        .first('lease_miles_per_year','lease_total_driveoff','zipcode', 'current_finance_preference')
         .then(function(res) {
-          const paymentOption = res.currentFinancePreference;
+          const paymentOption = res.current_finance_preference;
           if (paymentOption !== null) {
             if (paymentOption === 'lease') {
-              convo.setVar('miles_per_year', res.leaseMilesPerYear);
-              convo.setVar('total_driveoff', res.leaseTotalDriveoff);
+              convo.setVar('miles_per_year', res.lease_miles_per_year);
+              convo.setVar('total_driveoff', res.lease_total_driveoff);
               convo.setVar('lease_zipcode', res.zipcode);
               convo.gotoThread('answered_leaseq');
               next();
@@ -80,9 +80,9 @@ module.exports = function(controller) {
   controller.studio.before('cash', function(convo, next) {
     knex.table('users')
         .where('uuid', convo.context.user)
-        .first('zipcode', 'currentFinancePreference')
+        .first('zipcode', 'current_finance_preference')
         .then(function(res) {
-          const paymentOption = res.currentFinancePreference;
+          const paymentOption = res.current_finance_preference;
           if (paymentOption !== null) {
             if (paymentOption === 'cash') {
               convo.setVar('zipcode', res.zipcode);
@@ -102,13 +102,13 @@ module.exports = function(controller) {
   controller.studio.before('finance', function(convo, next) {
     knex.table('users')
         .where('uuid', convo.context.user)
-        .first('financeYears','financeDown','zipcode', 'currentFinancePreference')
+        .first('finance_years','finance_down','zipcode', 'current_finance_preference')
         .then(function(res) {
-          const paymentOption = res.currentFinancePreference;
+          const paymentOption = res.current_finance_preference;
           if (paymentOption !== null) {
             if (paymentOption === 'finance') {
-              convo.setVar('finance_years', res.financeYears);
-              convo.setVar('finance_down', res.financeDown);
+              convo.setVar('finance_years', res.finance_years);
+              convo.setVar('finance_down', res.finance_down);
               convo.setVar('zipcode', res.zipcode);
               convo.gotoThread('answered_financeq');
               next();

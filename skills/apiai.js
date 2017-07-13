@@ -51,9 +51,9 @@ module.exports = function(controller) {
         .first('id')
         .then(function(res) {
           knex.table('messages')
-              .insert({userId: res.id,
-                      msgStr: message.text,
-                      processedNLP: resp.result,
+              .insert({user_id: res.id,
+                      msg_str: message.text,
+                      processed_nlp: resp.result,
                       time: currentTime,
                       date: currentDate})
               .then(function() { });
@@ -92,7 +92,6 @@ module.exports = function(controller) {
     } else {
       knex.table('users')
         .where('uuid', message.user)
-        .first('zipcode')
         .update('zipcode', resp.result.parameters.zipcode)
         .then(function(){ });
       bot.reply(message, "Okay, I have changed your zipcode to " + resp.result.parameters.zipcode + ".");

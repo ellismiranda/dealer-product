@@ -31,12 +31,12 @@ module.exports = function(controller) {
     convo.setVar('_td_date', tdDate);
     knex.table('users')
         .where('uuid', convo.context.user)
-        .update('tdDate', tdDate)
+        .update('td_date', tdDate)
         .then(function(res) {
           if (_td_date) {
             knex.table('users')
                 .where('uuid', convo.context.user)
-                .update('tdTomorrow', false)
+                .update('td_tomorrow', false)
                 .then(function() { });
           }
         });
@@ -48,7 +48,7 @@ module.exports = function(controller) {
     convo.setVar('_td_time', tdTime);
     knex.table('users')
         .where('uuid', convo.context.user)
-        .update({tdTime: tdTime, hasTdScheduled: true})
+        .update({td_time: tdTime, has_td_scheduled: true})
         .then(function(res) { });
     next();
   });
@@ -58,7 +58,7 @@ module.exports = function(controller) {
     convo.setVar('_phone_number', phoneNumber);
     knex.table('users')
         .where('uuid', convo.context.user)
-        .update('phoneNumber', phoneNumber)
+        .update('phone_number', phoneNumber)
         .then(function() { });
     next();
   })
@@ -72,13 +72,13 @@ module.exports = function(controller) {
         .then(function() { });
     next();
   })
-  
+
   controller.studio.validate('different_car', 'other_car', function(convo, next) {
     const otherCar = convo.extractResponse('other_car');
     convo.setVar('other_car', otherCar);
     knex.table('users')
         .where('uuid', convo.context.user)
-        .update('otherCar', otherCar)
+        .update('other_car', otherCar)
         .then(function() { });
     next();
   })
@@ -88,7 +88,7 @@ module.exports = function(controller) {
     convo.setVar('other_coloroptions', otherColorOptions);
     knex.table('users')
         .where('uuid', convo.context.user)
-        .update('otherColorOptions', otherColorOptions)
+        .update('other_color_options', otherColorOptions)
         .then(function() { });
     next();
   })
