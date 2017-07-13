@@ -1,14 +1,4 @@
-const knex = require('knex')({
-  client: 'postgresql',
-  connection: {
-    host: process.env.pgHost,
-    user: process.env.pgUser,
-    password: process.env.pgPass,
-    database: process.env.pgDB,
-  }
-});
-
-const knex2 = require('../utils/uKnex.js');
+const knex = require('../utils/uKnex.js');
 const tools = require('../utils/uTools.js');
 
 module.exports = function(controller) {
@@ -25,7 +15,7 @@ module.exports = function(controller) {
       credit_score: credit_score
     } = convo.extractResponses();
 
-    knex2.update({lease_miles_per_year,
+    knex.update({lease_miles_per_year,
                   lease_total_driveoff,
                   zipcode,
                   credit_score}, convo.context.user);
@@ -41,7 +31,7 @@ module.exports = function(controller) {
       zipcode,
     } = convo.extractResponses();
 
-    knex2.update({zipcode}, convo.context.user);
+    knex.update({zipcode}, convo.context.user);
 
     tools.adjustFinance('cash', convo.context.user);
 
@@ -57,7 +47,7 @@ module.exports = function(controller) {
       credit_score
     } = convo.extractResponses();
 
-    knex2.update({finance_years,
+    knex.update({finance_years,
                   finance_down,
                   zipcode,
                   credit_score}, convo.context.user);
