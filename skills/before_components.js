@@ -1,13 +1,3 @@
-const knex2 = require('knex')({
-  client: 'postgresql',
-  connection: {
-    host: process.env.pgHost,
-    user: process.env.pgUser,
-    password: process.env.pgPass,
-    database: process.env.pgDB,
-  }
-});
-
 const knex = require('../utils/uKnex.js');
 const tools = require('../utils/uTools.js');
 
@@ -44,39 +34,35 @@ module.exports = function(controller) {
     next();
   })
 
-  controller.studio.before('lease', function(convo, next) {
+  controller.studio.before('lease', async function(convo, next) {
 
-    // const res = knex.getUserData(['lease_miles_per_year','lease_total_driveoff','zipcode', 'current_finance_preference'], convo.context.user);
-    // const paymentOption = res.current_finance_preference;
+    const { lease_miles_per_year: leaseMilesPerYear,
+            lease_total_driveoff: leaseTotalDriveoff,
+            zipcode,
+            current_finance_preference: currentFinancePreference
+          } = await knex.getUserData(['lease_miles_per_year','lease_total_driveoff','zipcode', 'current_finance_preference'], convo.context.user);
 
-
-    knex2.table('users')
-        .where('uuid', convo.context.user)
-        .first('lease_miles_per_year','lease_total_driveoff','zipcode', 'current_finance_preference')
-        .then(function(res) {
-          const paymentOption = res.current_finance_preference;
-          if (paymentOption !== null) {
-            if (paymentOption === 'lease') {
-              convo.setVar('miles_per_year', res.lease_miles_per_year);
-              convo.setVar('total_driveoff', res.lease_total_driveoff);
-              convo.setVar('lease_zipcode', res.zipcode);
-              convo.gotoThread('answered_leaseq');
-              next();
-            } else {
-              convo.setVar('other_pay', paymentOption);
-              convo.gotoThread('other_plan');
-              next();
-            }
-          } else {
-            next();
-          }
-        });
-    })
+    if (currentFinancePreference !== null) {
+      if (currentFinancePreference === 'lease') {
+        convo.setVar('miles_per_year', leaseMilesPerYear);
+        convo.setVar('total_driveoff', leaseTotalDriveoff);
+        convo.setVar('lease_zipcode', zipcode);
+        convo.gotoThread('answered_leaseq');
+        next();
+      } else {
+        convo.setVar('other_pay', currentFinancePreference);
+        convo.gotoThread('other_plan');
+        next();
+      }
+    } else {
+      next();
+    }
+  })
 
   controller.studio.before('cash', async function(convo, next) {
 
     const { zipcode,
-            current_finance_preference:currentFinancePreference
+            current_finance_preference: currentFinancePreference
           } = await knex.getUserData(['zipcode', 'current_finance_preference'], convo.context.user);
 
     if (currentFinancePreference !== null) {
