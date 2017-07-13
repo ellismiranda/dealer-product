@@ -1,11 +1,14 @@
 //random tool scripts
 
+const knex = require('../utils/uKnex.js');
+
 module.exports = {
   getTodayDate,
   getTomorrowDate,
   getTime,
   makeAttachment,
   adjustPrefs,
+  adjustFinance,
 }
 
 function getTodayDate() {
@@ -109,4 +112,12 @@ function adjustPrefs(preferences, reqAtts, modifier) {
     }
   }
   return newPrefs;
+}
+
+async function adjustFinance(type, user) {
+  const { current_finance_preference: currentFinancePreference } = await knex.getUserData('current_finance_preference', user);
+  if (currentFinancePreference !== null && currentFinancePreference !== type) {
+    knex.update({last_finance_preference: currentFinancePreference}, user);
+  }
+  knex.update({current_finance_preference: type}, user);
 }

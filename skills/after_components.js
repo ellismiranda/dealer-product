@@ -9,6 +9,7 @@ const knex = require('knex')({
 });
 
 const knex2 = require('../utils/uKnex.js');
+const tools = require('../utils/uTools.js');
 
 module.exports = function(controller) {
 
@@ -29,12 +30,7 @@ module.exports = function(controller) {
                   zipcode,
                   credit_score}, convo.context.user);
 
-    const { current_finance_preference: currentFinancePreference } = await knex2.getUserData('current_finance_preference', convo.context.user);
-
-    if (currentFinancePreference !== null && currentFinancePreference !== 'lease') {
-      knex2.update({last_finance_preference: currentFinancePreference}, convo.context.user);
-    }
-    knex2.update({current_finance_preference: 'lease'}, convo.context.user);
+    tools.adjustFinance('lease', convo.context.user);
 
     next();
   })
@@ -47,13 +43,7 @@ module.exports = function(controller) {
 
     knex2.update({zipcode}, convo.context.user);
 
-    const { current_finance_preference: currentFinancePreference } = await knex2.getUserData('current_finance_preference', convo.context.user);
-
-    if (currentFinancePreference !== null && currentFinancePreference !== 'cash') {
-      knex2.update({last_finance_preference: currentFinancePreference}, convo.context.user);
-    }
-
-    knex2.update({current_finance_preference: 'cash'}, convo.context.user);
+    tools.adjustFinance('cash', convo.context.user);
 
     next();
   })
@@ -72,14 +62,7 @@ module.exports = function(controller) {
                   zipcode,
                   credit_score}, convo.context.user);
 
-    const { current_finance_preference: currentFinancePreference } = await knex2.getUserData('current_finance_preference', convo.context.user);
-
-
-    if (currentFinancePreference !== null && currentFinancePreference !== 'finance') {
-      knex2.update({last_finance_preference: currentFinancePreference}, convo.context.user);
-    }
-
-    knex2.update({current_finance_preference: 'finance'}, convo.context.user);
+    tools.adjustFinance('finance', convo.context.user);
 
     next();
   })
