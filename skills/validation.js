@@ -72,7 +72,7 @@ module.exports = function(controller) {
         .then(function() { });
     next();
   })
-
+  
   controller.studio.validate('different_car', 'other_car', function(convo, next) {
     const otherCar = convo.extractResponse('other_car');
     convo.setVar('other_car', otherCar);

@@ -65,7 +65,7 @@ module.exports = function(controller) {
   apiai
 
   .action('hi.carla', async function(message, resp, bot) {
-    clapi.clapi(resp);
+    controller.studio.run(bot, 'fb hello', message.user, message.channel);
   })
 
   //HEAVY TESTING - THIS NEEDS CLAPI IMPLEMENTED
