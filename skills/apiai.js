@@ -72,28 +72,26 @@ module.exports = function(controller) {
   //this should give details about a car / show off the car
   .action('request.details', async function(message, resp, bot) {
     const replyAttachment = await handler.choose(resp);
-    bot.reply(message, {
-      attachment: replyAttachment,
-    })
+    bot.reply(message, { attachment: replyAttachment, })
    })
 
    //pretty basic currently, returns multiple carousel elements
   .action('request.group', async function(message, resp, bot){
     const replyAttachment = await handler.choose(resp);
-    bot.reply(message, { attachment: replyAttachment});
+    bot.reply(message, { attachment: replyAttachment });
   })
 
   //changes the user's zipcode
-  .action('change.zipcode', function(message, resp, bot) {
+  .action('change.zipcode', async function(message, resp, bot) {
     //checks if the user says that the zip isn't theirs
     if (resp.result.parameters.modifier == 'negation') {
       //runs a small botkit studio script to get a new zip
       controller.studio.run(bot, 'get_correct_zip', message.user, message.channel);
     } else {
-      knex.table('users')
-        .where('uuid', message.user)
-        .update('zipcode', resp.result.parameters.zipcode)
-        .then(function(){ });
+      const result = resp.result;
+      const parameters = result.parameters;
+      const zipcode = parameters.zipcode;
+      await knex2.update({zipcode: zipcode}, message.user);
       bot.reply(message, "Okay, I have changed your zipcode to " + resp.result.parameters.zipcode + ".");
     }
   })
@@ -101,34 +99,15 @@ module.exports = function(controller) {
   //modifies the user's preference score values based on what they say
   //e.g. "I only care about safety" => safety+1, rest-1
   //e.g. "I care about performance and utility" => performance+1, utility+1
-  .action('change.preferences', function(message, resp, bot) {
-    //grab the preferences
-    const reqAtts = resp.result.parameters.requestedAttributes;
-    //grab the language modifier
-    const modifier = resp.result.parameters.modifier;
+  .action('change.preferences', async function(message, resp, bot) {
+    const { requestedAttributes: reqAtts,
+            modifier,
+          } = resp.result.parameters;
+    const { preferences, } = await knex2.getUserData('preferences', message.user);
+    const newPrefs = await tools.adjustPrefs(preferences, reqAtts, modifier);
 
-    knex.table('users').where('uuid', message.user).first('preferences').then(function(res) {
-      const newPrefs = res.preferences;
-      let pref;
-      for (pref in newPrefs) {
-        if (modifier == 'singular') {
-          if (reqAtts.indexOf(pref) > -1) {
-              newPrefs[pref] = newPrefs[pref] + 1;
-          } else {
-            newPrefs[pref] = newPrefs[pref] - 1;
-          }
-        } else if (modifier == 'negation') {
-          if (reqAtts.indexOf(pref) > -1) {
-            newPrefs[pref] = newPrefs[pref] - 1;
-          }
-        } else {
-          if (reqAtts.indexOf(pref) > -1) {
-            newPrefs[pref] = newPrefs[pref] + 1;
-          }
-        }
-      }
-      knex.table('users').where('uuid', message.user).update({preferences: newPrefs}).then(function() { });
-    })
+    await knex2.update({preferences: newPrefs}, message.user);
+
     bot.reply(message, "Okay, I will adjust car selection accordingly.");
   })
 

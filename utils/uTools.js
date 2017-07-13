@@ -5,6 +5,7 @@ module.exports = {
   getTomorrowDate,
   getTime,
   makeAttachment,
+  adjustPrefs,
 }
 
 function getTodayDate() {
@@ -39,7 +40,7 @@ function makeGroupElements(cars) {
   const elements = [ ];
   for (let i = 0; i < cars.length && i < 10; i++) {
     const {make, model, year, images} = cars[i];
-    
+
     //TED IS A GENIUS
     const filterImages = images.filter(img => img.type === 'frontQuarter')
     const secondFilterImages = (filterImages.length > 0) ? filterImages[0] : images[0];
@@ -82,4 +83,30 @@ function makeElement(make, model, year, imageUrl) {
         }
       ]
     };
+}
+
+//modifies the user's preference score values based on what they say
+//e.g. "I only care about safety" => safety+1, rest-1
+//e.g. "I care about performance and utility" => performance+1, utility+1
+function adjustPrefs(preferences, reqAtts, modifier) {
+  const newPrefs = preferences;
+  let pref;
+  for (pref in newPrefs) {
+    if (modifier == 'singular') {
+      if (reqAtts.includes(pref)) {
+          newPrefs[pref] = newPrefs[pref] + 1;
+      } else {
+        newPrefs[pref] = newPrefs[pref] - 1;
+      }
+    } else if (modifier == 'negation') {
+      if (reqAtts.includes(pref)) {
+        newPrefs[pref] = newPrefs[pref] - 1;
+      }
+    } else {
+      if (reqAtts.includes(pref)) {
+        newPrefs[pref] = newPrefs[pref] + 1;
+      }
+    }
+  }
+  return newPrefs;
 }
