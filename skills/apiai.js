@@ -8,17 +8,7 @@ const checks = require('../utils/uChecks.js');
 const tools = require('../utils/uTools.js');
 const handler = require('../utils/uRequestHandler.js');
 
-const knex2 = require('../utils/uKnex.js');
-
-const knex = require('knex')({
-  client: 'postgresql',
-  connection: {
-    host: process.env.pgHost,
-    user: process.env.pgUser,
-    password: process.env.pgPass,
-    database: process.env.pgDB,
-  }
-});
+const knex = require('../utils/uknex.js');
 
 module.exports = function(controller) {
 
@@ -49,11 +39,11 @@ module.exports = function(controller) {
     const currentTime = await tools.getTime();
     const currentDate = await tools.getTodayDate();
 
-    const { id: userId } = await knex2.getUserData('id', message.user);
+    const { id: userId } = await knex.getUserData('id', message.user);
     const msgStr = message.text;
     const processedMsg = resp.result;
 
-    await knex2.logMessage({user_id: userId,
+    await knex.logMessage({user_id: userId,
                             msg_str: msgStr,
                             processed_nlp: processedMsg,
                             time: currentTime,
@@ -91,7 +81,7 @@ module.exports = function(controller) {
       const result = resp.result;
       const parameters = result.parameters;
       const zipcode = parameters.zipcode;
-      await knex2.update({zipcode: zipcode}, message.user);
+      await knex.update({zipcode: zipcode}, message.user);
       bot.reply(message, "Okay, I have changed your zipcode to " + resp.result.parameters.zipcode + ".");
     }
   })
@@ -103,23 +93,23 @@ module.exports = function(controller) {
     const { requestedAttributes: reqAtts,
             modifier,
           } = resp.result.parameters;
-    const { preferences, } = await knex2.getUserData('preferences', message.user);
+    const { preferences, } = await knex.getUserData('preferences', message.user);
     const newPrefs = await tools.adjustPrefs(preferences, reqAtts, modifier);
 
-    await knex2.update({preferences: newPrefs}, message.user);
+    await knex.update({preferences: newPrefs}, message.user);
 
     bot.reply(message, "Okay, I will adjust car selection accordingly.");
   })
 
   .action('schedule.testDrive', async function(message, resp, bot) {
-    const { has_td_scheduled: hasTdScheduled } = await knex2.getUserData('has_td_scheduled', message.user);
+    const { has_td_scheduled: hasTdScheduled } = await knex.getUserData('has_td_scheduled', message.user);
     const { make } = resp.result.parameters;
 
     if (hasTdScheduled) {
       controller.studio.run(bot, 'has_td_scheduled', message.user, message.channel);
     } else {
       if (make !== '') {
-        await knex2.update({td_car_make: make}, message.user)
+        await knex.update({td_car_make: make}, message.user)
       }
 
       controller.studio.run(bot, 'test_drive', message.user, message.channel);
