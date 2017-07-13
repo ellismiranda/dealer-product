@@ -111,24 +111,19 @@ module.exports = function(controller) {
     bot.reply(message, "Okay, I will adjust car selection accordingly.");
   })
 
-  .action('schedule.testDrive', function(message, resp, bot) {
-    knex.table('users')
-        .where('uuid', message.user)
-        .first('hasTdScheduled')
-        .then(function(res) {
-          if (res.hasTdScheduled) {
-            controller.studio.run(bot, 'has_td_scheduled', message.user, message.channel);
-          } else {
-            if (resp.result.parameters.car[0].make !== '') {
-              knex.table('users')
-                  .where('uuid', message.user)
-                  .first('hasTdScheduled')
-                  .update('tdCarMake', resp.result.parameters.car[0].make)
-                  .then(function(res) { });
-            }
-            controller.studio.run(bot, 'test_drive', message.user, message.channel);
-          }
-        });
+  .action('schedule.testDrive', async function(message, resp, bot) {
+    const { has_td_scheduled: hasTdScheduled } = await knex2.getUserData('has_td_scheduled', message.user);
+    const { make } = resp.result.parameters;
+
+    if (hasTdScheduled) {
+      controller.studio.run(bot, 'has_td_scheduled', message.user, message.channel);
+    } else {
+      if (make !== '') {
+        await knex2.update({td_car_make: make}, message.user)
+      }
+
+      controller.studio.run(bot, 'test_drive', message.user, message.channel);
+    }
   })
 
   // //standard response message in the case of
