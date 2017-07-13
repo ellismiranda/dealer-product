@@ -73,26 +73,25 @@ module.exports = function(controller) {
         });
     })
 
-  controller.studio.before('cash', function(convo, next) {
-    knex2.table('users')
-        .where('uuid', convo.context.user)
-        .first('zipcode', 'current_finance_preference')
-        .then(function(res) {
-          const paymentOption = res.current_finance_preference;
-          if (paymentOption !== null) {
-            if (paymentOption === 'cash') {
-              convo.setVar('zipcode', res.zipcode);
-              convo.gotoThread('answered_cashq');
-              next();
-            } else {
-              convo.setVar('other_pay', paymentOption);
-              convo.gotoThread('other_plan');
-              next();
-            }
-          } else {
-            next();
-          }
-        });
+  controller.studio.before('cash', async function(convo, next) {
+
+    const { zipcode,
+            current_finance_preference:currentFinancePreference
+          } = await knex.getUserData(['zipcode', 'current_finance_preference'], convo.context.user);
+
+    if (currentFinancePreference !== null) {
+      if (currentFinancePreference === 'cash') {
+        convo.setVar('zipcode', res.zipcode);
+        convo.gotoThread('answered_cashq');
+        next();
+      } else {
+        convo.setVar('other_pay', currentFinancePreference);
+        convo.gotoThread('other_plan');
+        next();
+      }
+    } else {
+      next();
+    }
   })
 
   controller.studio.before('finance', async function(convo, next) {
@@ -102,8 +101,7 @@ module.exports = function(controller) {
            zipcode,
            current_finance_preference: currentFinancePreference
          } = await knex.getUserData(['finance_years','finance_down','zipcode', 'current_finance_preference'], convo.context.user);
-    // const paymentOption = res.current_finance_preference;
-    // console.log(res.current_finance_preference);
+
     if (currentFinancePreference !== null) {
       if (currentFinancePreference === 'finance') {
         convo.setVar('finance_years', financeYears);
