@@ -8,15 +8,7 @@ const checks = require('../utils/uChecks.js');
 const tools = require('../utils/uTools.js');
 const handler = require('../utils/uRequestHandler.js');
 
-const knex = require('knex')({
-  client: 'postgresql',
-  connection: {
-    host: process.env.pgHost,
-    user: process.env.pgUser,
-    password: process.env.pgPass,
-    database: process.env.pgDB,
-  }
-});
+const knex = require('../utils/uknex.js');
 
 module.exports = function(controller) {
 
@@ -36,28 +28,26 @@ module.exports = function(controller) {
    })
 
   //produces a nice log of the result of .process(message)
-  apiai.all(function (message, resp, bot) {
+  apiai.all(async function (message, resp, bot) {
 
+    //logging the processed apiai info
     console.log("apiai result:");
     console.log(resp.result);
     console.log(resp.result.parameters);
 
-    const currentTime = tools.getTime();
-    const currentDate = tools.getTodayDate();
-
     //log the date, time, message, and nlp response
-    knex.table('users')
-        .where('uuid', message.user)
-        .first('id')
-        .then(function(res) {
-          knex.table('messages')
-              .insert({user_id: res.id,
-                      msg_str: message.text,
-                      processed_nlp: resp.result,
-                      time: currentTime,
-                      date: currentDate})
-              .then(function() { });
-        });
+    const currentTime = await tools.getTime();
+    const currentDate = await tools.getTodayDate();
+
+    const { id: userId } = await knex.getUserData('id', message.user);
+    const msgStr = message.text;
+    const processedMsg = resp.result;
+
+    await knex.logMessage({user_id: userId,
+                            msg_str: msgStr,
+                            processed_nlp: processedMsg,
+                            time: currentTime,
+                            date: currentDate});
   })
 
 
@@ -72,28 +62,24 @@ module.exports = function(controller) {
   //this should give details about a car / show off the car
   .action('request.details', async function(message, resp, bot) {
     const replyAttachment = await handler.choose(resp);
-    bot.reply(message, {
-      attachment: replyAttachment,
-    })
+    bot.reply(message, { attachment: replyAttachment, })
    })
 
    //pretty basic currently, returns multiple carousel elements
   .action('request.group', async function(message, resp, bot){
     const replyAttachment = await handler.choose(resp);
-    bot.reply(message, { attachment: replyAttachment});
+    bot.reply(message, { attachment: replyAttachment });
   })
 
   //changes the user's zipcode
-  .action('change.zipcode', function(message, resp, bot) {
+  .action('change.zipcode', async function(message, resp, bot) {
     //checks if the user says that the zip isn't theirs
     if (resp.result.parameters.modifier == 'negation') {
       //runs a small botkit studio script to get a new zip
       controller.studio.run(bot, 'get_correct_zip', message.user, message.channel);
     } else {
-      knex.table('users')
-        .where('uuid', message.user)
-        .update('zipcode', resp.result.parameters.zipcode)
-        .then(function(){ });
+      const zipcode = resp.result.parameters.zipcode;
+      await knex.update({zipcode: zipcode}, message.user);
       bot.reply(message, "Okay, I have changed your zipcode to " + resp.result.parameters.zipcode + ".");
     }
   })
@@ -101,55 +87,31 @@ module.exports = function(controller) {
   //modifies the user's preference score values based on what they say
   //e.g. "I only care about safety" => safety+1, rest-1
   //e.g. "I care about performance and utility" => performance+1, utility+1
-  .action('change.preferences', function(message, resp, bot) {
-    //grab the preferences
-    const reqAtts = resp.result.parameters.requestedAttributes;
-    //grab the language modifier
-    const modifier = resp.result.parameters.modifier;
+  .action('change.preferences', async function(message, resp, bot) {
+    const { requestedAttributes: reqAtts,
+            modifier,
+          } = resp.result.parameters;
+    const { preferences, } = await knex.getUserData('preferences', message.user);
+    const newPrefs = await tools.adjustPrefs(preferences, reqAtts, modifier);
 
-    knex.table('users').where('uuid', message.user).first('preferences').then(function(res) {
-      const newPrefs = res.preferences;
-      let pref;
-      for (pref in newPrefs) {
-        if (modifier == 'singular') {
-          if (reqAtts.indexOf(pref) > -1) {
-              newPrefs[pref] = newPrefs[pref] + 1;
-          } else {
-            newPrefs[pref] = newPrefs[pref] - 1;
-          }
-        } else if (modifier == 'negation') {
-          if (reqAtts.indexOf(pref) > -1) {
-            newPrefs[pref] = newPrefs[pref] - 1;
-          }
-        } else {
-          if (reqAtts.indexOf(pref) > -1) {
-            newPrefs[pref] = newPrefs[pref] + 1;
-          }
-        }
-      }
-      knex.table('users').where('uuid', message.user).update({preferences: newPrefs}).then(function() { });
-    })
+    await knex.update({preferences: newPrefs}, message.user);
+
     bot.reply(message, "Okay, I will adjust car selection accordingly.");
   })
 
-  .action('schedule.testDrive', function(message, resp, bot) {
-    knex.table('users')
-        .where('uuid', message.user)
-        .first('hasTdScheduled')
-        .then(function(res) {
-          if (res.hasTdScheduled) {
-            controller.studio.run(bot, 'has_td_scheduled', message.user, message.channel);
-          } else {
-            if (resp.result.parameters.car[0].make !== '') {
-              knex.table('users')
-                  .where('uuid', message.user)
-                  .first('hasTdScheduled')
-                  .update('tdCarMake', resp.result.parameters.car[0].make)
-                  .then(function(res) { });
-            }
-            controller.studio.run(bot, 'test_drive', message.user, message.channel);
-          }
-        });
+  .action('schedule.testDrive', async function(message, resp, bot) {
+    const { has_td_scheduled: hasTdScheduled } = await knex.getUserData('has_td_scheduled', message.user);
+    const { make } = resp.result.parameters;
+
+    if (hasTdScheduled) {
+      controller.studio.run(bot, 'has_td_scheduled', message.user, message.channel);
+    } else {
+      if (make !== '') {
+        await knex.update({td_car_make: make}, message.user)
+      }
+
+      controller.studio.run(bot, 'test_drive', message.user, message.channel);
+    }
   })
 
   // //standard response message in the case of

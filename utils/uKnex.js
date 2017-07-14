@@ -10,10 +10,32 @@ const knex = require('knex')({
 
 module.exports = {
   getUserData,
+  update,
+  insert,
+  logMessage,
 }
 
 function getUserData(firstData, user) {
   return knex.table('users')
               .where('uuid', user)
               .first(firstData);
+}
+
+function update(updates, user) {
+  knex.table('users')
+      .where('uuid', user)
+      .update(updates)
+      .then(function() { });
+}
+
+function insert(inserts, user) {
+  knex.table('users')
+      .insert(inserts)
+      .then(function() { });
+}
+
+function logMessage(inserts) {
+  knex.table('messages')
+      .insert(inserts)
+      .then(function() { });
 }
