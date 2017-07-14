@@ -7,13 +7,18 @@ module.exports = function(controller) {
     const { td_date: tdDate,
             td_time: tdTime,
             location,
-            td_car_make: tdCarMake
-          }= await knex.getUserData(['td_date', 'td_time', 'location', 'td_car_make'], convo.context.user);
+            td_car_make: tdCarMake,
+            other_car: otherCar
+          }= await knex.getUserData(['td_date', 'td_time', 'location', 'td_car_make', 'other_car'], convo.context.user);
 
     convo.setVar('date', tdDate);
     convo.setVar('time', tdTime);
     convo.setVar('location', location);
-    convo.setVar('carMake', tdCarMake);
+    if (tdCarMake) {
+      convo.setVar('carMake', tdCarMake);
+    } else if (otherCar) {
+      convo.setVar('carMake', otherCar)
+    }
 
     next();
   })

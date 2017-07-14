@@ -101,14 +101,16 @@ module.exports = function(controller) {
 
   .action('schedule.testDrive', async function(message, resp, bot) {
     const { has_td_scheduled: hasTdScheduled } = await knex.getUserData('has_td_scheduled', message.user);
-    const { make } = resp.result.parameters;
+    const { model, make, year } = resp.result.parameters.car[0];
 
     if (hasTdScheduled) {
       controller.studio.run(bot, 'has_td_scheduled', message.user, message.channel);
     } else {
-      if (make !== '') {
-        await knex.update({td_car_make: make}, message.user)
-      }
+      let car = { };
+      if (make !== '') car.make = make;
+      if (model !== '') car.model = model;
+      if (year !== '') car.year = year;
+      knex.update({td_car: car}, message.user);
 
       controller.studio.run(bot, 'test_drive', message.user, message.channel);
     }
