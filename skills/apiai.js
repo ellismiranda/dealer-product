@@ -106,6 +106,7 @@ module.exports = function(controller) {
       controller.studio.run(bot, 'has_td_scheduled', message.user, message.channel);
     } else {
       tools.updateCar(resp.result.parameters.car[0], message.user);
+      //check if there is a car in the dealer's db here
       controller.studio.run(bot, 'test_drive', message.user, message.channel);
     }
   })
