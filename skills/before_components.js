@@ -23,10 +23,25 @@ module.exports = function(controller) {
     next();
   })
 
-  //makes use of encapsulated knex calls, EXAMPLE FOR ENCAPSULATING OTHERS
   controller.studio.before('test_drive', async function(convo, next) {
-    const res = await knex.getUserData('td_date', convo.context.user);
-    convo.setVar('_td_date', res.td_date);
+    const { has_td_scheduled: hasTdScheduled,
+            td_date: tdDate,
+            td_time: tdTime,
+            td_car_make: tdCarMake,
+            other_car: otherCar
+          } = await knex.getUserData(['has_td_scheduled', 'td_date', 'td_time', 'td_car_make', 'other_car'], convo.context.user);
+
+    if (hasTdScheduled) {
+      convo.setVar('date', tdDate);
+      convo.setVar('time', tdTime);
+
+      if (tdCarMake) convo.setVar('carMake', tdCarMake);
+      else if (otherCar) convo.setVar('carMake', otherCar);
+
+      convo.gotoThread('already_scheduled')
+    } else {
+      convo.setVar('_td_date', tdDate);
+    }
     next();
   })
 
