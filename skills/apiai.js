@@ -78,9 +78,7 @@ module.exports = function(controller) {
       //runs a small botkit studio script to get a new zip
       controller.studio.run(bot, 'get_correct_zip', message.user, message.channel);
     } else {
-      const result = resp.result;
-      const parameters = result.parameters;
-      const zipcode = parameters.zipcode;
+      const zipcode = resp.result.parameters.zipcode;
       await knex.update({zipcode: zipcode}, message.user);
       bot.reply(message, "Okay, I have changed your zipcode to " + resp.result.parameters.zipcode + ".");
     }

@@ -10,12 +10,10 @@ module.exports = function(controller) {
 
     if (res === undefined) {
       const data = await request.getFbData(convo.context.user);
-      const res = data.res;
-      const text = res.text;
       const { first_name: firstName,
               last_name: lastName,
               gender,
-            } = await JSON.parse(text);
+            } = await JSON.parse(data.res.text);
 
       knex.insert({
         uuid: convo.context.user,
@@ -29,7 +27,7 @@ module.exports = function(controller) {
         td_tomorrow: true,
         td_date: null,
         has_td_scheduled: false
-      });
+      }, convo.context.user);
 
       convo.setVar('firstName', firstName);
     } else {

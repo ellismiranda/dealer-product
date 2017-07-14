@@ -48,15 +48,12 @@ module.exports = function(controller) {
         convo.setVar('total_driveoff', leaseTotalDriveoff);
         convo.setVar('lease_zipcode', zipcode);
         convo.gotoThread('answered_leaseq');
-        next();
       } else {
         convo.setVar('other_pay', currentFinancePreference);
         convo.gotoThread('other_plan');
-        next();
       }
-    } else {
-      next();
     }
+    next();
   })
 
   controller.studio.before('cash', async function(convo, next) {
@@ -69,15 +66,12 @@ module.exports = function(controller) {
       if (currentFinancePreference === 'cash') {
         convo.setVar('zipcode', res.zipcode);
         convo.gotoThread('answered_cashq');
-        next();
       } else {
         convo.setVar('other_pay', currentFinancePreference);
         convo.gotoThread('other_plan');
-        next();
       }
-    } else {
-      next();
     }
+    next();
   })
 
   controller.studio.before('finance', async function(convo, next) {
@@ -94,16 +88,12 @@ module.exports = function(controller) {
         convo.setVar('finance_down', financeDown);
         convo.setVar('zipcode', zipcode);
         convo.gotoThread('answered_financeq');
-        next();
       } else {
         convo.setVar('other_pay', currentFinancePreference);
         convo.gotoThread('other_plan');
-        next();
       }
-    } else {
-      next();
     }
-
+    next();
   })
 
 }
