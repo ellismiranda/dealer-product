@@ -25,6 +25,13 @@ module.exports = function(controller) {
     next();
   });
 
+  controller.studio.validate('test_drive', 'td_car', function(convo, next) {
+    const tdCar = convo.extractResponse('td_car');
+    convo.setVar('td_car', tdCar);
+    knex.update({other_car: tdCar}, convo.context.user);
+    next();
+  })
+
   controller.studio.validate('phone_number', '_phone_number', async function(convo, next) {
 
     const phoneNumber = convo.extractResponse('_phone_number');
