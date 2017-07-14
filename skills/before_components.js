@@ -3,20 +3,29 @@ const tools = require('../utils/uTools.js');
 
 module.exports = function(controller) {
 
-  controller.studio.before('has_td_scheduled', async function(convo, next) {
-    const res = await knex.getUserData(['td_date', 'td_time', 'location', 'td_car_make'], convo.context.user);
-
-    convo.setVar('_td_date', res.td_date);
-    convo.setVar('_td_time', res.td_time);
-    convo.setVar('_location', res.location);
-
-    next();
-  })
-
-  //makes use of encapsulated knex calls, EXAMPLE FOR ENCAPSULATING OTHERS
   controller.studio.before('test_drive', async function(convo, next) {
-    const res = await knex.getUserData('td_date', convo.context.user);
-    convo.setVar('_td_date', res.td_date);
+    const { has_td_scheduled: hasTdScheduled,
+            td_date: tdDate,
+            td_time: tdTime,
+            td_car: tdCar,
+            other_car: otherCar
+          } = await knex.getUserData(['has_td_scheduled', 'td_date', 'td_time', 'td_car', 'other_car'], convo.context.user);
+
+    if (tdCar) convo.setVar('car', `${tdCar.year} ${tdCar.make} ${tdCar.model}`);
+    else if (otherCar) convo.setVar('car', otherCar);
+    else {
+      //ask what car the user wants to drive
+    }
+
+    if (hasTdScheduled) {
+      convo.setVar('date', tdDate);
+      convo.setVar('time', tdTime);
+
+      convo.gotoThread('already_scheduled')
+    } else {
+
+      convo.setVar('_td_date', tdDate);
+    }
     next();
   })
 
