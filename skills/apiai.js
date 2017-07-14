@@ -101,13 +101,13 @@ module.exports = function(controller) {
 
   .action('schedule.testDrive', async function(message, resp, bot) {
     const { has_td_scheduled: hasTdScheduled } = await knex.getUserData('has_td_scheduled', message.user);
-    
+
     //check if there is a car in the dealer's db here and do something about it
     if (!hasTdScheduled) tools.updateCar(resp.result.parameters.car[0], message.user);
     controller.studio.run(bot, 'test_drive', message.user, message.channel);
   })
 
-  // //standard response message in the case of
+  //standard response message in the case of
   .action('input.unknown', function (message, resp, bot) {
     bot.reply(message, resp.result.fulfillment.speech);
   })

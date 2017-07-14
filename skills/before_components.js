@@ -7,19 +7,23 @@ module.exports = function(controller) {
     const { has_td_scheduled: hasTdScheduled,
             td_date: tdDate,
             td_time: tdTime,
-            td_car_make: tdCarMake,
+            td_car: tdCar,
             other_car: otherCar
-          } = await knex.getUserData(['has_td_scheduled', 'td_date', 'td_time', 'td_car_make', 'other_car'], convo.context.user);
+          } = await knex.getUserData(['has_td_scheduled', 'td_date', 'td_time', 'td_car', 'other_car'], convo.context.user);
+
+    if (tdCarMake) convo.setVar('car', tdCar.year + ' ' + tdCar.make + ' ' tdCar.model);
+    else if (otherCar) convo.setVar('car', otherCar);
+    else {
+      //ask what car the user wants to drive
+    }
 
     if (hasTdScheduled) {
       convo.setVar('date', tdDate);
       convo.setVar('time', tdTime);
 
-      if (tdCarMake) convo.setVar('carMake', tdCarMake);
-      else if (otherCar) convo.setVar('carMake', otherCar);
-
       convo.gotoThread('already_scheduled')
     } else {
+
       convo.setVar('_td_date', tdDate);
     }
     next();
