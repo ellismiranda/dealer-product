@@ -11,7 +11,7 @@ module.exports = function(controller) {
             other_car: otherCar
           } = await knex.getUserData(['has_td_scheduled', 'td_date', 'td_time', 'td_car', 'other_car'], convo.context.user);
 
-    if (tdCarMake) convo.setVar('car', tdCar.year + ' ' + tdCar.make + ' ' tdCar.model);
+    if (tdCar) convo.setVar('car', `${tdCar.year} ${tdCar.make} ${tdCar.model}`);
     else if (otherCar) convo.setVar('car', otherCar);
     else {
       //ask what car the user wants to drive
