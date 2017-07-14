@@ -9,6 +9,7 @@ module.exports = {
   makeAttachment,
   adjustPrefs,
   adjustFinance,
+  updateCar,
 }
 
 function getTodayDate() {
@@ -36,6 +37,15 @@ function getTime() {
   const seconds = date.getSeconds();
   const time = `${hours}:${minutes}:${seconds}`;
   return time;
+}
+
+function updateCar(data, user) {
+  const { model, make, year } = data;
+  let car = { };
+  if (make !== '') car.make = make;
+  if (model !== '') car.model = model;
+  if (year !== '') car.year = year;
+  knex.update({td_car: car}, user);
 }
 
 //Creates the 'elements' piece of the attachment for multiple cars
