@@ -4,11 +4,16 @@ const tools = require('../utils/uTools.js');
 module.exports = function(controller) {
 
   controller.studio.before('has_td_scheduled', async function(convo, next) {
-    const res = await knex.getUserData(['td_date', 'td_time', 'location', 'td_car_make'], convo.context.user);
+    const { td_date: tdDate,
+            td_time: tdTime,
+            location,
+            td_car_make: tdCarMake
+          }= await knex.getUserData(['td_date', 'td_time', 'location', 'td_car_make'], convo.context.user);
 
-    convo.setVar('_td_date', res.td_date);
-    convo.setVar('_td_time', res.td_time);
-    convo.setVar('_location', res.location);
+    convo.setVar('date', tdDate);
+    convo.setVar('time', tdTime);
+    convo.setVar('location', location);
+    convo.setVar('carMake', tdCarMake);
 
     next();
   })
